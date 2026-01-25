@@ -382,7 +382,7 @@ export default function Home() {
         <main className="relative p-6 max-w-6xl mx-auto">
           <div className="text-lg font-semibold">加载中…</div>
           <div className="text-base font-medium text-slate-300 mt-2">
-            首次加载会读 3 个 JSON：排班、节点中文、默认等级表。
+            首次加载会读 3 个 JSON：仲裁时间、节点中文、默认等级表。
           </div>
         </main>
       </div>
