@@ -623,7 +623,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="space-y-1">
               <div className="text-sm font-semibold text-slate-200">星球</div>
               <select
@@ -722,7 +722,8 @@ export default function Home() {
                 {viewSwitch}
               </div>
 
-              <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden">
+              {/* 桌面/平板：表格 */}
+              <div className="hidden md:block rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden">
                 <div className="grid grid-cols-12 gap-2 px-4 py-3 text-sm font-semibold text-slate-200 border-b border-white/10">
                   <div className="col-span-2">时间</div>
                   <div className="col-span-7">任务</div>
@@ -798,13 +799,87 @@ export default function Home() {
                   })()}
                 </div>
               </div>
+
+              {/* 手机：卡片列表 */}
+              <div className="md:hidden space-y-2">
+                {(() => {
+                  let lastDay = "";
+                  return scheduleRange.items
+                    .filter(({ nodeKey }) => isVisibleNode(nodeKey))
+                    .map(({ ts, nodeKey }) => {
+                      const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
+                      const tier = tierOfNode[nodeKey] ?? "unrated";
+                      const day = dayLabel(ts);
+                      const showDay = day !== lastDay;
+                      lastDay = day;
+                      return (
+                        <div key={`${ts}-${nodeKey}`}>
+                          {showDay ? (
+                            <div className="px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
+                                <div className="text-sm font-semibold text-white">
+                                  {day}
+                                </div>
+                              </div>
+                            </div>
+                          ) : null}
+
+                          <div
+                            className={[
+                              "mt-2 rounded-xl ring-1 ring-white/10 border-l-4 p-3",
+                              tierNodeTintClass(tier),
+                            ].join(" ")}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="font-mono text-base text-slate-200">
+                                {hhmm(ts)}
+                              </div>
+                              <span
+                                className={[
+                                  "px-2 py-1 rounded-full text-xs font-semibold",
+                                  tierPillClass(tier),
+                                ].join(" ")}
+                              >
+                                {tierZh(tier)}
+                              </span>
+                            </div>
+
+                            <div className="mt-2 text-sm font-semibold text-white">
+                              {displayNode(n)}
+                            </div>
+                            <div className="mt-1 text-xs text-slate-400">
+                              {nodeKey}
+                            </div>
+
+                            <div className="mt-3">
+                              <select
+                                className="w-full text-sm rounded-lg bg-white/5 ring-1 ring-white/10 px-2 py-2 outline-none"
+                                value={tier}
+                                onChange={(e) =>
+                                  moveNode(nodeKey, e.target.value)
+                                }
+                              >
+                                {tiers.map((t) => (
+                                  <option key={t} value={t}>
+                                    移动到 {tierZh(t)}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    });
+                })()}
+              </div>
             </div>
           ) : (
             <section className="space-y-3">
               <div className="flex items-center justify-end">
                 {viewSwitch}
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {tiers
                 .filter((tier) => selectedTiers[tier] !== false)
                 .map((tier) => {
