@@ -26,9 +26,13 @@ export const DEFAULT_TIERS = ["S", "A+", "A", "A-", "B", "C", "unrated"] as cons
 
 export function hhmm(ts: number) {
   const d = new Date(ts * 1000);
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}${mm}`;
+  const h = d.getHours();
+  const m = d.getMinutes();
+  // 需求：显示成 01:00 / 02:00 / 24:00（把 00:00 显示为 24:00）
+  if (h === 0 && m === 0) return "24:00";
+  const hh = String(h).padStart(2, "0");
+  const mm = String(m).padStart(2, "0");
+  return `${hh}:${mm}`;
 }
 
 export function displayNode(n: NodeInfo) {
