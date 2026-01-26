@@ -48,11 +48,12 @@
     "C": [
       "ClanNode8",
       "SolNode46",
-      "SolNode305"
+      "SolNode305",
+      "ClanNode16",
+      "SolNode18"
     ],
     "未评级": [
       "ClanNode14",
-      "ClanNode16",
       "ClanNode17",
       "ClanNode19",
       "ClanNode2",
@@ -78,7 +79,6 @@
       "SolNode17",
       "SolNode172",
       "SolNode177",
-      "SolNode18",
       "SolNode185",
       "SolNode187",
       "SolNode211",
