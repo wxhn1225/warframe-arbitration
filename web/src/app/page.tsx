@@ -795,93 +795,123 @@ export default function Home() {
                 {viewSwitch}
               </div>
 
-              {/* 桌面表头（手机隐藏） */}
-              <div className="hidden md:grid grid-cols-12 gap-2 px-4 py-3 text-sm font-semibold text-slate-200 rounded-t-2xl bg-white/5 ring-1 ring-white/10 border-b border-white/10">
-                <div className="col-span-2">时间</div>
-                <div className="col-span-7">任务</div>
-                <div className="col-span-3">等级</div>
-              </div>
-
-              {/* 虚拟列表（桌面/手机共用一个 virtualizer） */}
-              <div
-                ref={listRef}
-                className={isMobile ? "space-y-0" : "rounded-b-2xl bg-white/5 ring-1 ring-t-0 ring-white/10 overflow-hidden"}
-                style={{
-                  height: virtualizer.getTotalSize(),
-                  position: "relative",
-                }}
-              >
-                {virtualizer.getVirtualItems().map((vRow) => {
-                  const item = flatItems[vRow.index];
-                  if (!item) return null;
-                  return (
-                    <div
-                      key={item.key}
-                      data-index={vRow.index}
-                      ref={virtualizer.measureElement}
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        transform: `translateY(${vRow.start - virtualizer.options.scrollMargin}px)`,
-                      }}
-                    >
-                      {item.type === "day" ? (
-                        isMobile ? (
+              {/* 手机：卡片虚拟列表 */}
+              {isMobile && (
+                <div
+                  ref={listRef}
+                  style={{ height: virtualizer.getTotalSize(), position: "relative" }}
+                >
+                  {virtualizer.getVirtualItems().map((vRow) => {
+                    const item = flatItems[vRow.index];
+                    if (!item) return null;
+                    return (
+                      <div
+                        key={item.key}
+                        data-index={vRow.index}
+                        ref={virtualizer.measureElement}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          transform: `translateY(${vRow.start - virtualizer.options.scrollMargin}px)`,
+                        }}
+                      >
+                        {item.type === "day" ? (
                           <div className="px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 mb-2">
                             <div className="flex items-center gap-2">
                               <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
                               <div className="text-sm font-semibold text-white">{item.day}</div>
                             </div>
                           </div>
-                        ) : (
-                          <div className="px-4 py-3 bg-gradient-to-r from-blue-400/20 via-slate-400/10 to-transparent border-y border-white/10">
-                            <div className="flex items-center gap-3">
-                              <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
-                              <div className="text-sm md:text-base font-semibold text-white tracking-wide">{item.day}</div>
-                              <div className="flex-1 h-px bg-white/10" />
+                        ) : (() => {
+                          const { ts, nodeKey } = item;
+                          const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
+                          const tier = tierOfNode[nodeKey] ?? "unrated";
+                          return (
+                            <div className={["mb-2 rounded-xl ring-1 ring-white/10 border-l-4 p-3", tierNodeTintClass(tier)].join(" ")}>
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="font-mono text-base text-slate-200">{hhmm(ts)}</div>
+                                <span className={["px-2 py-1 rounded-full text-xs font-semibold", tierPillClass(tier)].join(" ")}>{tierZh(tier)}</span>
+                              </div>
+                              <div className="mt-2 text-sm font-semibold text-white">{displayNode(n)}</div>
+                              <div className="mt-1 text-xs text-slate-400">{nodeKey}</div>
+                              <div className="mt-3">
+                                <select className="w-full text-sm rounded-lg bg-white/5 ring-1 ring-white/10 px-2 py-2 outline-none" value={tier} onChange={(e) => moveNode(nodeKey, e.target.value)}>
+                                  {tiers.map((t) => <option key={t} value={t}>移动到 {tierZh(t)}</option>)}
+                                </select>
+                              </div>
                             </div>
-                          </div>
-                        )
-                      ) : (() => {
-                        const { ts, nodeKey } = item;
-                        const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
-                        const tier = tierOfNode[nodeKey] ?? "unrated";
-                        return isMobile ? (
-                          <div className={["mb-2 rounded-xl ring-1 ring-white/10 border-l-4 p-3", tierNodeTintClass(tier)].join(" ")}>
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="font-mono text-base text-slate-200">{hhmm(ts)}</div>
-                              <span className={["px-2 py-1 rounded-full text-xs font-semibold", tierPillClass(tier)].join(" ")}>{tierZh(tier)}</span>
+                          );
+                        })()}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 桌面/平板：虚拟滚动表格（与原始结构相同：一个 rounded-2xl 容器内含表头+内容） */}
+              {!isMobile && (
+                <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden">
+                  <div className="grid grid-cols-12 gap-2 px-4 py-3 text-sm font-semibold text-slate-200 border-b border-white/10">
+                    <div className="col-span-2">时间</div>
+                    <div className="col-span-7">任务</div>
+                    <div className="col-span-3">等级</div>
+                  </div>
+                  <div
+                    ref={listRef}
+                    style={{ height: virtualizer.getTotalSize(), position: "relative" }}
+                  >
+                    {virtualizer.getVirtualItems().map((vRow) => {
+                      const item = flatItems[vRow.index];
+                      if (!item) return null;
+                      return (
+                        <div
+                          key={item.key}
+                          data-index={vRow.index}
+                          ref={virtualizer.measureElement}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            transform: `translateY(${vRow.start - virtualizer.options.scrollMargin}px)`,
+                          }}
+                        >
+                          {item.type === "day" ? (
+                            <div className="px-4 py-3 bg-gradient-to-r from-blue-400/20 via-slate-400/10 to-transparent border-y border-white/10">
+                              <div className="flex items-center gap-3">
+                                <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
+                                <div className="text-sm md:text-base font-semibold text-white tracking-wide">{item.day}</div>
+                                <div className="flex-1 h-px bg-white/10" />
+                              </div>
                             </div>
-                            <div className="mt-2 text-sm font-semibold text-white">{displayNode(n)}</div>
-                            <div className="mt-1 text-xs text-slate-400">{nodeKey}</div>
-                            <div className="mt-3">
-                              <select className="w-full text-sm rounded-lg bg-white/5 ring-1 ring-white/10 px-2 py-2 outline-none" value={tier} onChange={(e) => moveNode(nodeKey, e.target.value)}>
-                                {tiers.map((t) => <option key={t} value={t}>移动到 {tierZh(t)}</option>)}
-                              </select>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className={["grid grid-cols-12 gap-2 px-4 py-3 items-center border-l-4 border-b border-white/10 transition-colors", tierNodeTintClass(tier)].join(" ")}>
-                            <div className="col-span-2 font-mono text-slate-200">{hhmm(ts)}</div>
-                            <div className="col-span-7">
-                              <div className="text-sm font-medium text-white">{displayNode(n)}</div>
-                              <div className="text-xs text-slate-400 mt-0.5">{nodeKey}</div>
-                            </div>
-                            <div className="col-span-3 flex items-center gap-2">
-                              <span className={["px-2 py-1 rounded-full text-xs font-semibold", tierPillClass(tier)].join(" ")}>{tierZh(tier)}</span>
-                              <select className="text-sm rounded-lg bg-black/30 ring-1 ring-white/15 px-2 py-1 outline-none focus:ring-fuchsia-400/40" value={tier} onChange={(e) => moveNode(nodeKey, e.target.value)}>
-                                {tiers.map((t) => <option key={t} value={t}>移动到 {tierZh(t)}</option>)}
-                              </select>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  );
-                })}
-              </div>
+                          ) : (() => {
+                            const { ts, nodeKey } = item;
+                            const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
+                            const tier = tierOfNode[nodeKey] ?? "unrated";
+                            return (
+                              <div className={["grid grid-cols-12 gap-2 px-4 py-3 items-center border-l-4 border-b border-white/10 transition-colors", tierNodeTintClass(tier)].join(" ")}>
+                                <div className="col-span-2 font-mono text-slate-200">{hhmm(ts)}</div>
+                                <div className="col-span-7">
+                                  <div className="text-sm font-medium text-white">{displayNode(n)}</div>
+                                  <div className="text-xs text-slate-400 mt-0.5">{nodeKey}</div>
+                                </div>
+                                <div className="col-span-3 flex items-center gap-2">
+                                  <span className={["px-2 py-1 rounded-full text-xs font-semibold", tierPillClass(tier)].join(" ")}>{tierZh(tier)}</span>
+                                  <select className="text-sm rounded-lg bg-black/30 ring-1 ring-white/15 px-2 py-1 outline-none focus:ring-fuchsia-400/40" value={tier} onChange={(e) => moveNode(nodeKey, e.target.value)}>
+                                    {tiers.map((t) => <option key={t} value={t}>移动到 {tierZh(t)}</option>)}
+                                  </select>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <section className="space-y-3">
