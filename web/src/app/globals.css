@@ -1,10 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* 让系统控件保持可读（尤其是 Windows 的 select 下拉列表） */
-  color-scheme: light;
+  --background: #090e18;
+  --foreground: #e2e8f0;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -14,20 +13,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 解决深色页面下，原生 select 下拉“选项文字看不见”（白底白字/浅字）的问题 */
+/* 解决深色页面下，原生 select 下拉"选项文字看不见"的问题 */
 select {
   color-scheme: light;
 }
@@ -35,4 +27,24 @@ select option,
 select optgroup {
   color: #0f172a;
   background: #ffffff;
+}
+
+/* 细滚动条：适配虚拟列表容器 */
+.thin-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.18);
+  border-radius: 4px;
+}
+.thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.38);
+}
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.18) transparent;
 }

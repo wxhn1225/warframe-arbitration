@@ -109,6 +109,7 @@ export default function Home() {
   const [filterMission, setFilterMission] = useState("");
   const [filterFaction, setFilterFaction] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const scheduleTopRef = useRef<HTMLDivElement | null>(null);
   const desktopScrollRef = useRef<HTMLDivElement | null>(null);
@@ -412,31 +413,24 @@ export default function Home() {
 
   if (!schedule || !nodesFile || !tierlist) {
     return (
-      <div className="min-h-screen bg-[#0B1220] text-slate-100">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-500/18 blur-3xl" />
-          <div className="absolute top-40 -left-24 h-[520px] w-[520px] rounded-full bg-slate-400/16 blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-blue-400/10 blur-3xl" />
+      <div className="min-h-screen bg-[#090e18] text-slate-100 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="inline-block h-9 w-9 rounded-full border-2 border-slate-700 border-t-blue-400 animate-spin" />
+          <div className="text-sm text-slate-400">加载数据中…</div>
         </div>
-        <main className="relative p-6 max-w-6xl mx-auto">
-          <div className="text-lg font-semibold">加载中…</div>
-          <div className="text-base font-medium text-slate-300 mt-2">
-            首次加载会读 3 个 JSON：仲裁时间、节点中文、默认等级表。
-          </div>
-        </main>
       </div>
     );
   }
 
   const tiers = tierlist.tiers;
   const viewSwitch = (
-    <div className="flex flex-wrap gap-2 shrink-0">
+    <div className="inline-flex rounded-xl bg-white/5 ring-1 ring-white/10 p-0.5 shrink-0">
       <button
         className={[
-          "px-3 py-2 rounded-xl ring-1 ring-white/10 backdrop-blur",
+          "px-4 py-1.5 rounded-lg text-sm font-medium transition-colors",
           tab === "schedule"
-            ? "bg-blue-500/25 text-blue-100"
-            : "bg-white/5 hover:bg-white/10 text-slate-200",
+            ? "bg-blue-500/30 text-blue-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+            : "text-slate-400 hover:text-slate-200",
         ].join(" ")}
         onClick={() => setTab("schedule")}
       >
@@ -444,10 +438,10 @@ export default function Home() {
       </button>
       <button
         className={[
-          "px-3 py-2 rounded-xl ring-1 ring-white/10 backdrop-blur",
+          "px-4 py-1.5 rounded-lg text-sm font-medium transition-colors",
           tab === "tierlist"
-            ? "bg-blue-500/25 text-blue-100"
-            : "bg-white/5 hover:bg-white/10 text-slate-200",
+            ? "bg-blue-500/30 text-blue-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+            : "text-slate-400 hover:text-slate-200",
         ].join(" ")}
         onClick={() => setTab("tierlist")}
       >
@@ -457,335 +451,221 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0B1220] text-slate-100 selection:bg-blue-400/25 selection:text-slate-50">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-24 left-1/2 h-[780px] w-[780px] -translate-x-1/2 rounded-full bg-blue-500/16 blur-3xl" />
-        <div className="absolute top-40 -left-24 h-[620px] w-[620px] rounded-full bg-slate-400/14 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-[700px] w-[700px] rounded-full bg-blue-400/10 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(148,163,184,0.10),transparent_62%)]" />
+    <div className="min-h-screen bg-[#090e18] text-slate-100 selection:bg-blue-400/25 selection:text-slate-50">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 left-1/2 h-[900px] w-[900px] -translate-x-1/2 rounded-full bg-blue-600/10 blur-[120px]" />
+        <div className="absolute top-1/3 -left-40 h-[600px] w-[600px] rounded-full bg-indigo-600/8 blur-[100px]" />
+        <div className="absolute bottom-0 right-0 h-[600px] w-[600px] rounded-full bg-blue-500/8 blur-[100px]" />
       </div>
 
-      <main className="relative p-6 max-w-7xl mx-auto space-y-6">
-        <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-2">
-              <span className="inline-block h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_18px_rgba(96,165,250,0.9)]" />
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                Warframe Arbitration
-              </h1>
-            </div>
+      <main className="relative px-4 py-5 md:px-6 md:py-6 max-w-7xl mx-auto space-y-4">
+        <header className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-60" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.9)]" />
+            </span>
+            <h1 className="text-lg md:text-xl font-bold tracking-tight text-white">
+              Warframe Arbitration
+            </h1>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-1.5">
             <button
-              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
+              className="h-8 px-3 flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-xs text-slate-300 hover:text-white transition-colors"
               onClick={exportScheduleTxt}
               title="导出当前选择范围的仲裁序列 TXT"
             >
-              导出仲裁 TXT
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              TXT
             </button>
-
             <button
-              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
+              className="h-8 px-3 flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-xs text-slate-300 hover:text-white transition-colors"
               onClick={exportScheduleJson}
               title="导出当前选择范围的仲裁序列 JSON"
             >
-              导出仲裁 JSON
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              JSON
             </button>
-
             <button
-              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
+              className="h-8 px-3 flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-xs text-slate-300 hover:text-white transition-colors"
               onClick={resetToDefault}
               title="清空本地保存的等级表，恢复默认"
             >
-              恢复默认等级
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.95"/></svg>
+              重置
             </button>
           </div>
         </header>
 
-        <section className="rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur p-4">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="w-full rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="inline-flex items-center gap-2">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
-                  <span className="px-2 py-1 rounded-lg bg-white/10 ring-1 ring-white/15 text-sm font-bold text-white">
-                    当前
-                  </span>
-                </div>
-                {current ? (
-                  <span
-                    className={[
-                      "px-2 py-1 rounded-full text-xs font-semibold",
-                      tierPillClass(tierOfNode[current.cur.nodeKey] ?? "unrated"),
-                    ].join(" ")}
-                  >
-                    {tierZh(tierOfNode[current.cur.nodeKey] ?? "unrated")}
-                  </span>
-                ) : null}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* 当前仲裁 */}
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900/90 to-slate-800/50 ring-1 ring-white/10 p-5">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent pointer-events-none" />
+            <div className="relative">
+              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-3 flex items-center gap-2">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
+                </span>
+                当前仲裁
               </div>
-
-              <div className="mt-2 flex items-baseline gap-3">
-                <div className="font-mono text-3xl md:text-4xl text-white">
-                  {current ? hhmm(current.cur.ts) : "—"}
-                </div>
+              <div className="text-xl md:text-2xl font-bold text-white leading-snug">
+                {current ? displayNode(nodes[current.cur.nodeKey] ?? fallbackNode(current.cur.nodeKey)) : "—"}
               </div>
-
-              <div className="mt-2 text-base md:text-lg text-slate-50 font-semibold">
-                {current
-                  ? displayNode(
-                      nodes[current.cur.nodeKey] ??
-                        fallbackNode(current.cur.nodeKey),
-                    )
-                  : "—"}
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-white/10">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-200/90">
-                  <span className="inline-flex items-center gap-2">
-                    <span className="inline-block h-2 w-2 rounded-full bg-blue-300 shadow-[0_0_14px_rgba(147,197,253,0.85)]" />
-                    <span className="font-semibold">下个</span>
-                  </span>
-                  <span className="font-mono text-base text-white">
-                    {current ? hhmm(current.next.ts) : "—"}
-                  </span>
-                  <span className="text-slate-300">·</span>
-                  <span className="text-slate-50 font-medium">
-                    {current
-                      ? displayNode(
-                          nodes[current.next.nodeKey] ??
-                            fallbackNode(current.next.nodeKey),
-                        )
-                      : "—"}
-                  </span>
-                  {current ? (
-                    <span
-                      className={[
-                        "ml-auto px-2 py-1 rounded-full text-xs font-semibold",
-                        tierPillClass(
-                          tierOfNode[current.next.nodeKey] ?? "unrated",
-                        ),
-                      ].join(" ")}
-                    >
-                      {tierZh(tierOfNode[current.next.nodeKey] ?? "unrated")}
-                    </span>
-                  ) : null}
-                </div>
+              <div className="mt-3 flex items-center gap-3">
+                <span className="font-mono text-2xl text-slate-100 tabular-nums">{current ? hhmm(current.cur.ts) : "—"}</span>
+                {current && (<span className={["px-2.5 py-1 rounded-full text-xs font-bold", tierPillClass(tierOfNode[current.cur.nodeKey] ?? "unrated")].join(" ")}>{tierZh(tierOfNode[current.cur.nodeKey] ?? "unrated")}</span>)}
               </div>
             </div>
-
-            {/* 视图切换挪到“未来范围”那一行右侧 */}
+          </div>
+          {/* 下一个仲裁 */}
+          <div className="relative rounded-2xl overflow-hidden bg-white/[0.03] ring-1 ring-white/8 p-5">
+            <div className="relative">
+              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-3 flex items-center gap-2">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="5 12 12 5 19 12"/><polyline points="5 19 12 12 19 19"/></svg>
+                下一个
+              </div>
+              <div className="text-xl md:text-2xl font-bold text-slate-200 leading-snug">
+                {current ? displayNode(nodes[current.next.nodeKey] ?? fallbackNode(current.next.nodeKey)) : "—"}
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                <span className="font-mono text-2xl text-slate-300 tabular-nums">{current ? hhmm(current.next.ts) : "—"}</span>
+                {current && (<span className={["px-2.5 py-1 rounded-full text-xs font-bold", tierPillClass(tierOfNode[current.next.nodeKey] ?? "unrated")].join(" ")}>{tierZh(tierOfNode[current.next.nodeKey] ?? "unrated")}</span>)}
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur p-4 space-y-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-base font-semibold text-slate-200">显示范围</span>
-                <div className="inline-flex rounded-xl bg-white/5 ring-1 ring-white/10 p-1">
-                  <button
-                    className={[
-                      "px-3 py-1.5 rounded-lg text-sm",
-                      rangeHours === 24
-                        ? "bg-white/10 text-white"
-                        : "text-slate-300 hover:text-white",
-                    ].join(" ")}
-                    onClick={() => setRangeHours(24)}
-                  >
-                    24小时
-                  </button>
-                  <button
-                    className={[
-                      "px-3 py-1.5 rounded-lg text-sm",
-                      rangeHours === 168
-                        ? "bg-white/10 text-white"
-                        : "text-slate-300 hover:text-white",
-                    ].join(" ")}
-                    onClick={() => setRangeHours(168)}
-                  >
-                    7天
-                  </button>
-                  <button
-                    className={[
-                      "px-3 py-1.5 rounded-lg text-sm",
-                      rangeHours === 720
-                        ? "bg-white/10 text-white"
-                        : "text-slate-300 hover:text-white",
-                    ].join(" ")}
-                    onClick={() => setRangeHours(720)}
-                  >
-                    30天
-                  </button>
-                  <button
-                    className={[
-                      "px-3 py-1.5 rounded-lg text-sm",
-                      rangeHours === 2160
-                        ? "bg-white/10 text-white"
-                        : "text-slate-300 hover:text-white",
-                    ].join(" ")}
-                    onClick={() => setRangeHours(2160)}
-                  >
-                    3个月
-                  </button>
-                  <button
-                    className={[
-                      "px-3 py-1.5 rounded-lg text-sm",
-                      rangeHours === 8760
-                        ? "bg-white/10 text-white"
-                        : "text-slate-300 hover:text-white",
-                    ].join(" ")}
-                    onClick={() => setRangeHours(8760)}
-                  >
-                    1年
-                  </button>
-                </div>
+        <section className="rounded-2xl bg-white/[0.04] ring-1 ring-white/8 p-4 space-y-3">
+          {/* 工具栏：范围 + 视图切换 + 筛选开关 */}
+          <div className="flex flex-wrap items-center gap-3 justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* 范围选择 */}
+              <div className="inline-flex rounded-xl bg-black/20 ring-1 ring-white/8 p-0.5">
+                {([24, 168, 720, 2160, 8760] as const).map((h) => {
+                  const label = h === 24 ? "24h" : h === 168 ? "7天" : h === 720 ? "30天" : h === 2160 ? "3月" : "1年";
+                  return (
+                    <button
+                      key={h}
+                      className={[
+                        "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                        rangeHours === h
+                          ? "bg-white/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                          : "text-slate-400 hover:text-slate-200",
+                      ].join(" ")}
+                      onClick={() => setRangeHours(h)}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
+              {/* 视图切换 */}
+              {viewSwitch}
+            </div>
 
-              <div className="flex flex-wrap gap-3 items-center">
-                <div className="text-base font-semibold text-slate-200">筛选等级</div>
+            <div className="flex items-center gap-2">
+              {/* 筛选开关 */}
+              <button
+                className={[
+                  "h-8 px-3 flex items-center gap-1.5 rounded-lg ring-1 text-xs transition-colors",
+                  showFilters
+                    ? "bg-blue-500/20 ring-blue-400/30 text-blue-200"
+                    : "bg-white/5 ring-white/10 text-slate-400 hover:text-slate-200",
+                ].join(" ")}
+                onClick={() => setShowFilters((v) => !v)}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                筛选
+                {showFilters ? " ▴" : " ▾"}
+              </button>
+              <button
+                className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+                onClick={clearFilters}
+              >
+                清空
+              </button>
+            </div>
+          </div>
+
+          {/* 筛选面板（可折叠） */}
+          {showFilters && (
+            <div className="rounded-xl bg-black/20 ring-1 ring-white/8 p-3 space-y-3">
+              {/* 等级勾选 */}
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-1">等级</span>
                 {tiers.map((tier) => (
-                  <label
-                    key={tier}
-                    className="inline-flex items-center gap-2 text-base text-slate-100"
-                  >
+                  <label key={tier} className="cursor-pointer">
                     <input
                       type="checkbox"
-                      className="accent-fuchsia-400"
+                      className="sr-only peer"
                       checked={selectedTiers[tier] !== false}
-                      onChange={(e) =>
-                        setSelectedTiers((m) => ({
-                          ...m,
-                          [tier]: e.target.checked,
-                        }))
-                      }
+                      onChange={(e) => setSelectedTiers((m) => ({ ...m, [tier]: e.target.checked }))}
                     />
-                    <span
-                      className={[
-                        "px-2 py-0.5 rounded-full text-sm font-semibold",
-                        tierPillClass(tier),
-                      ].join(" ")}
-                    >
+                    <span className={[
+                      "px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-opacity peer-checked:opacity-100 opacity-35",
+                      tierPillClass(tier),
+                    ].join(" ")}>
                       {tierZh(tier)}
                     </span>
                   </label>
                 ))}
               </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-              <button
-                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15"
-                onClick={clearFilters}
-                title="清空筛选与搜索"
-              >
-                清空筛选
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="space-y-1">
-              <div className="text-sm font-semibold text-slate-200">星球</div>
-              <select
-                className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 outline-none focus:ring-blue-300/40"
-                value={filterPlanet}
-                onChange={(e) => setFilterPlanet(e.target.value)}
-              >
-                <option value="">全部星球</option>
-                {planetOptions.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-sm font-semibold text-slate-200">任务类型</div>
-              <select
-                className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 outline-none focus:ring-blue-300/40"
-                value={filterMission}
-                onChange={(e) => setFilterMission(e.target.value)}
-              >
-                <option value="">全部任务类型</option>
-                {missionOptions.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-sm font-semibold text-slate-200">派系</div>
-              <select
-                className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 outline-none focus:ring-blue-300/40"
-                value={filterFaction}
-                onChange={(e) => setFilterFaction(e.target.value)}
-              >
-                <option value="">全部派系</option>
-                {factionOptions.map((f) => (
-                  <option key={f} value={f}>
-                    {f}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-sm font-semibold text-slate-200">关键词（可选）</div>
-              <input
-                className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 placeholder:text-slate-400 outline-none focus:ring-blue-300/40"
-                placeholder="支持连写或空格：例如 地球拦截 或 地球 拦截"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <div className="text-sm font-medium text-slate-300">
-                关键词会同时匹配：星球/任务类型/派系/节点名/节点Key
+              {/* 下拉 + 搜索 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                <select
+                  className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 text-sm outline-none focus:ring-blue-300/40"
+                  value={filterPlanet}
+                  onChange={(e) => setFilterPlanet(e.target.value)}
+                >
+                  <option value="">全部星球</option>
+                  {planetOptions.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+                <select
+                  className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 text-sm outline-none focus:ring-blue-300/40"
+                  value={filterMission}
+                  onChange={(e) => setFilterMission(e.target.value)}
+                >
+                  <option value="">全部任务类型</option>
+                  {missionOptions.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+                <select
+                  className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 text-sm outline-none focus:ring-blue-300/40"
+                  value={filterFaction}
+                  onChange={(e) => setFilterFaction(e.target.value)}
+                >
+                  <option value="">全部派系</option>
+                  {factionOptions.map((f) => <option key={f} value={f}>{f}</option>)}
+                </select>
+                <input
+                  className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 text-sm placeholder:text-slate-500 outline-none focus:ring-blue-300/40"
+                  placeholder="关键词搜索…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
               </div>
             </div>
-          </div>
+          )}
 
           {tab === "schedule" ? (
-            <div className="space-y-3">
-              <div
-                ref={scheduleTopRef}
-                className="text-base font-medium text-slate-300 flex flex-wrap items-center justify-between gap-3"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span>未来范围：</span>
-                  {scheduleRange.items.length > 0 ? (
-                    <>
-                      <span className="font-mono text-slate-200">
-                        {dayLabel(scheduleRange.items[0]!.ts)}{" "}
-                        {hhmm(scheduleRange.items[0]!.ts)}
-                      </span>
-                      <span className="text-slate-400">→</span>
-                      <span className="font-mono text-slate-200">
-                        {dayLabel(
-                          scheduleRange.items[scheduleRange.items.length - 1]!.ts,
-                        )}{" "}
-                        {hhmm(
-                          scheduleRange.items[scheduleRange.items.length - 1]!.ts,
-                        )}
-                      </span>
-                      <span className="text-slate-400">
-                        （{scheduleRange.items.length} 条 /{" "}
-                        {Math.round(scheduleRange.items.length / 24)} 天）
-                      </span>
-                    </>
-                  ) : (
-                    <span>—</span>
-                  )}
-                </div>
-
-                {viewSwitch}
+            <div className="space-y-2">
+              {/* 范围信息条 */}
+              <div ref={scheduleTopRef} className="flex flex-wrap items-center gap-2 text-xs text-slate-500 px-1">
+                {scheduleRange.items.length > 0 ? (
+                  <>
+                    <span className="font-mono text-slate-400">{dayLabel(scheduleRange.items[0]!.ts)} {hhmm(scheduleRange.items[0]!.ts)}</span>
+                    <span>→</span>
+                    <span className="font-mono text-slate-400">{dayLabel(scheduleRange.items[scheduleRange.items.length - 1]!.ts)} {hhmm(scheduleRange.items[scheduleRange.items.length - 1]!.ts)}</span>
+                    <span className="text-slate-600">·</span>
+                    <span>{scheduleRange.items.length} 条 / {Math.round(scheduleRange.items.length / 24)} 天</span>
+                  </>
+                ) : <span>暂无数据</span>}
               </div>
 
               {/* 桌面/平板：虚拟滚动表格 */}
-              <div className="hidden md:block rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden">
-                <div className="grid grid-cols-12 gap-2 px-4 py-3 text-sm font-semibold text-slate-200 border-b border-white/10">
+              <div className="hidden md:block rounded-2xl bg-black/20 ring-1 ring-white/8 overflow-hidden">
+                <div className="grid grid-cols-12 gap-2 px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-white/8">
                   <div className="col-span-2">时间</div>
                   <div className="col-span-7">任务</div>
                   <div className="col-span-3">等级</div>
@@ -793,7 +673,7 @@ export default function Home() {
 
                 <div
                   ref={desktopScrollRef}
-                  className="overflow-y-auto"
+                  className="overflow-y-auto thin-scroll"
                   style={{ height: "min(75vh, 640px)" }}
                 >
                   <div
@@ -818,13 +698,13 @@ export default function Home() {
                           }}
                         >
                           {item.type === "day" ? (
-                            <div className="px-4 py-3 bg-gradient-to-r from-blue-400/20 via-slate-400/10 to-transparent border-y border-white/10">
-                              <div className="flex items-center gap-3">
-                                <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
-                                <div className="text-sm md:text-base font-semibold text-white tracking-wide">
+                            <div className="px-4 py-2 bg-gradient-to-r from-slate-700/30 to-transparent border-y border-white/6">
+                              <div className="flex items-center gap-2">
+                                <div className="h-1.5 w-1.5 rounded-full bg-blue-400/70" />
+                                <div className="text-xs font-semibold text-slate-400 tracking-wide">
                                   {item.day}
                                 </div>
-                                <div className="flex-1 h-px bg-white/10" />
+                                <div className="flex-1 h-px bg-white/6" />
                               </div>
                             </div>
                           ) : (
@@ -835,11 +715,11 @@ export default function Home() {
                               return (
                                 <div
                                   className={[
-                                    "grid grid-cols-12 gap-2 px-4 py-3 items-center border-l-4 border-b border-white/10 transition-colors",
+                                    "grid grid-cols-12 gap-2 px-4 py-2.5 items-center border-l-2 border-b border-white/5 transition-colors hover:bg-white/[0.02]",
                                     tierNodeTintClass(tier),
                                   ].join(" ")}
                                 >
-                                  <div className="col-span-2 font-mono text-slate-200">
+                                  <div className="col-span-2 font-mono text-sm text-slate-300 tabular-nums">
                                     {hhmm(ts)}
                                   </div>
                                   <div className="col-span-7">
@@ -887,7 +767,7 @@ export default function Home() {
               {/* 手机：虚拟滚动卡片列表 */}
               <div
                 ref={mobileScrollRef}
-                className="md:hidden overflow-y-auto"
+                className="md:hidden overflow-y-auto thin-scroll"
                 style={{ height: "min(80vh, 700px)" }}
               >
                 <div
@@ -1069,14 +949,6 @@ export default function Home() {
           )}
         </section>
 
-        <footer className="text-xs text-slate-400">
-          数据来源：
-          <code className="px-1 text-slate-200">arbys.txt</code> +
-          <code className="px-1 text-slate-200">ExportRegions.json</code> +
-          <code className="px-1 text-slate-200">dict.zh.json</code>
-          ，构建后放在
-          <code className="px-1 text-slate-200">web/public/data</code>。
-        </footer>
       </main>
 
       {showScrollTop && tab === "schedule" ? (
