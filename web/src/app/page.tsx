@@ -103,7 +103,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   const [tab, setTab] = useState<"schedule" | "tierlist">("schedule");
-  const [rangeHours, setRangeHours] = useState<24 | 168 | 720>(168);
+  const [rangeHours, setRangeHours] = useState<24 | 168 | 720 | 2160 | 8760>(168);
   const [filterPlanet, setFilterPlanet] = useState("");
   const [filterMission, setFilterMission] = useState("");
   const [filterFaction, setFilterFaction] = useState("");
@@ -441,7 +441,7 @@ export default function Home() {
             <button
               className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
               onClick={exportScheduleTxt}
-              title="导出当前选择范围（24小时/7天/30天）的仲裁排班 TXT"
+              title="导出当前选择范围的仲裁序列 TXT"
             >
               导出仲裁 TXT
             </button>
@@ -449,7 +449,7 @@ export default function Home() {
             <button
               className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
               onClick={exportScheduleJson}
-              title="导出当前选择范围（24小时/7天/30天）的仲裁排班 JSON"
+              title="导出当前选择范围的仲裁序列 JSON"
             >
               导出仲裁 JSON
             </button>
@@ -577,6 +577,28 @@ export default function Home() {
                     onClick={() => setRangeHours(720)}
                   >
                     30天
+                  </button>
+                  <button
+                    className={[
+                      "px-3 py-1.5 rounded-lg text-sm",
+                      rangeHours === 2160
+                        ? "bg-white/10 text-white"
+                        : "text-slate-300 hover:text-white",
+                    ].join(" ")}
+                    onClick={() => setRangeHours(2160)}
+                  >
+                    3个月
+                  </button>
+                  <button
+                    className={[
+                      "px-3 py-1.5 rounded-lg text-sm",
+                      rangeHours === 8760
+                        ? "bg-white/10 text-white"
+                        : "text-slate-300 hover:text-white",
+                    ].join(" ")}
+                    onClick={() => setRangeHours(8760)}
+                  >
+                    1年
                   </button>
                 </div>
               </div>
