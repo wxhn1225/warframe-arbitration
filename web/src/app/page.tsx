@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import {
   buildTierOfNode,
   displayNode,
@@ -111,8 +111,21 @@ export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const scheduleTopRef = useRef<HTMLDivElement | null>(null);
-  const desktopScrollRef = useRef<HTMLDivElement | null>(null);
-  const mobileScrollRef = useRef<HTMLDivElement | null>(null);
+  const desktopListRef = useRef<HTMLDivElement | null>(null);
+  const mobileListRef = useRef<HTMLDivElement | null>(null);
+  const desktopScrollMargin = useRef(0);
+  const mobileScrollMargin = useRef(0);
+
+  useLayoutEffect(() => {
+    if (desktopListRef.current) {
+      desktopScrollMargin.current =
+        desktopListRef.current.getBoundingClientRect().top + window.scrollY;
+    }
+    if (mobileListRef.current) {
+      mobileScrollMargin.current =
+        mobileListRef.current.getBoundingClientRect().top + window.scrollY;
+    }
+  });
 
   useEffect(() => {
     const id = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 30_000);
@@ -329,18 +342,18 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scheduleRange.items, tierOfNode, selectedTiers, filterPlanet, filterMission, filterFaction, searchTokens]);
 
-  const desktopVirtualizer = useVirtualizer({
+  const desktopVirtualizer = useWindowVirtualizer({
     count: flatItems.length,
-    getScrollElement: () => desktopScrollRef.current,
     estimateSize: (i) => (flatItems[i]?.type === "day" ? 52 : 58),
     overscan: 15,
+    scrollMargin: desktopScrollMargin.current,
   });
 
-  const mobileVirtualizer = useVirtualizer({
+  const mobileVirtualizer = useWindowVirtualizer({
     count: flatItems.length,
-    getScrollElement: () => mobileScrollRef.current,
     estimateSize: (i) => (flatItems[i]?.type === "day" ? 44 : 130),
     overscan: 8,
+    scrollMargin: mobileScrollMargin.current,
   });
 
   function clearFilters() {
@@ -792,16 +805,12 @@ export default function Home() {
                 </div>
 
                 <div
-                  ref={desktopScrollRef}
-                  className="overflow-y-auto thin-scroll"
-                  style={{ height: "min(75vh, 640px)" }}
+                  ref={desktopListRef}
+                  style={{
+                    height: desktopVirtualizer.getTotalSize(),
+                    position: "relative",
+                  }}
                 >
-                  <div
-                    style={{
-                      height: desktopVirtualizer.getTotalSize(),
-                      position: "relative",
-                    }}
-                  >
                     {desktopVirtualizer.getVirtualItems().map((vRow) => {
                       const item = flatItems[vRow.index]!;
                       return (
@@ -814,7 +823,7 @@ export default function Home() {
                             top: 0,
                             left: 0,
                             width: "100%",
-                            transform: `translateY(${vRow.start}px)`,
+                            transform: `translateY(${vRow.start - desktopVirtualizer.options.scrollMargin}px)`,
                           }}
                         >
                           {item.type === "day" ? (
@@ -880,22 +889,18 @@ export default function Home() {
                         </div>
                       );
                     })}
-                  </div>
                 </div>
               </div>
 
               {/* 手机：虚拟滚动卡片列表 */}
               <div
-                ref={mobileScrollRef}
-                className="md:hidden overflow-y-auto thin-scroll"
-                style={{ height: "min(80vh, 700px)" }}
+                ref={mobileListRef}
+                className="md:hidden"
+                style={{
+                  height: mobileVirtualizer.getTotalSize(),
+                  position: "relative",
+                }}
               >
-                <div
-                  style={{
-                    height: mobileVirtualizer.getTotalSize(),
-                    position: "relative",
-                  }}
-                >
                   {mobileVirtualizer.getVirtualItems().map((vRow) => {
                     const item = flatItems[vRow.index]!;
                     return (
@@ -908,7 +913,7 @@ export default function Home() {
                           top: 0,
                           left: 0,
                           width: "100%",
-                          transform: `translateY(${vRow.start}px)`,
+                          transform: `translateY(${vRow.start - mobileVirtualizer.options.scrollMargin}px)`,
                         }}
                       >
                         {item.type === "day" ? (
@@ -975,7 +980,6 @@ export default function Home() {
                       </div>
                     );
                   })}
-                </div>
               </div>
             </div>
           ) : (

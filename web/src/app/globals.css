@@ -36,22 +36,3 @@ select optgroup {
   color: #0f172a;
   background: #ffffff;
 }
-
-/* 细滚动条：用于虚拟列表容器 */
-.thin-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-.thin-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.thin-scroll::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.2);
-  border-radius: 4px;
-}
-.thin-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.4);
-}
-.thin-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
-}
