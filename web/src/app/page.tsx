@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   buildTierOfNode,
   displayNode,
@@ -110,6 +111,8 @@ export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const scheduleTopRef = useRef<HTMLDivElement | null>(null);
+  const desktopScrollRef = useRef<HTMLDivElement | null>(null);
+  const mobileScrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 30_000);
@@ -303,6 +306,42 @@ export default function Home() {
     // AND：每个 token 都必须命中
     return searchTokens.every((tok) => text.includes(tok));
   }
+
+  type FlatItem =
+    | { type: "day"; day: string; key: string }
+    | { type: "row"; ts: number; nodeKey: string; key: string };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const flatItems = useMemo<FlatItem[]>(() => {
+    let lastDay = "";
+    const result: FlatItem[] = [];
+    for (const { ts, nodeKey } of scheduleRange.items) {
+      if (!isVisibleNode(nodeKey)) continue;
+      const day = dayLabel(ts);
+      if (day !== lastDay) {
+        result.push({ type: "day", day, key: `day-${day}` });
+        lastDay = day;
+      }
+      result.push({ type: "row", ts, nodeKey, key: `${ts}-${nodeKey}` });
+    }
+    return result;
+  // isVisibleNode 不是稳定引用，intentionally 依赖完整 filter 状态
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scheduleRange.items, tierOfNode, selectedTiers, filterPlanet, filterMission, filterFaction, searchTokens]);
+
+  const desktopVirtualizer = useVirtualizer({
+    count: flatItems.length,
+    getScrollElement: () => desktopScrollRef.current,
+    estimateSize: (i) => (flatItems[i]?.type === "day" ? 52 : 58),
+    overscan: 15,
+  });
+
+  const mobileVirtualizer = useVirtualizer({
+    count: flatItems.length,
+    getScrollElement: () => mobileScrollRef.current,
+    estimateSize: (i) => (flatItems[i]?.type === "day" ? 44 : 130),
+    overscan: 8,
+  });
 
   function clearFilters() {
     setFilterPlanet("");
@@ -744,7 +783,7 @@ export default function Home() {
                 {viewSwitch}
               </div>
 
-              {/* 桌面/平板：表格 */}
+              {/* 桌面/平板：虚拟滚动表格 */}
               <div className="hidden md:block rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden">
                 <div className="grid grid-cols-12 gap-2 px-4 py-3 text-sm font-semibold text-slate-200 border-b border-white/10">
                   <div className="col-span-2">时间</div>
@@ -752,148 +791,191 @@ export default function Home() {
                   <div className="col-span-3">等级</div>
                 </div>
 
-                <div className="divide-y divide-white/10">
-                  {(() => {
-                    let lastDay = "";
-                    return scheduleRange.items
-                      .filter(({ nodeKey }) => isVisibleNode(nodeKey))
-                      .map(({ ts, nodeKey }) => {
-                        const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
-                        const tier = tierOfNode[nodeKey] ?? "unrated";
-                        const day = dayLabel(ts);
-                        const showDay = day !== lastDay;
-                        lastDay = day;
-                        return (
-                          <div key={`${ts}-${nodeKey}`}>
-                            {showDay ? (
-                              <div className="px-4 py-3 bg-gradient-to-r from-blue-400/20 via-slate-400/10 to-transparent border-y border-white/10">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
-                                  <div className="text-sm md:text-base font-semibold text-white tracking-wide">
-                                    {day}
-                                  </div>
-                                  <div className="flex-1 h-px bg-white/10" />
+                <div
+                  ref={desktopScrollRef}
+                  className="overflow-y-auto"
+                  style={{ height: "min(75vh, 640px)" }}
+                >
+                  <div
+                    style={{
+                      height: desktopVirtualizer.getTotalSize(),
+                      position: "relative",
+                    }}
+                  >
+                    {desktopVirtualizer.getVirtualItems().map((vRow) => {
+                      const item = flatItems[vRow.index]!;
+                      return (
+                        <div
+                          key={item.key}
+                          data-index={vRow.index}
+                          ref={desktopVirtualizer.measureElement}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            transform: `translateY(${vRow.start}px)`,
+                          }}
+                        >
+                          {item.type === "day" ? (
+                            <div className="px-4 py-3 bg-gradient-to-r from-blue-400/20 via-slate-400/10 to-transparent border-y border-white/10">
+                              <div className="flex items-center gap-3">
+                                <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
+                                <div className="text-sm md:text-base font-semibold text-white tracking-wide">
+                                  {item.day}
                                 </div>
-                              </div>
-                            ) : null}
-                            <div
-                              className={[
-                                "grid grid-cols-12 gap-2 px-4 py-3 items-center border-l-4 transition-colors",
-                                tierNodeTintClass(tier),
-                              ].join(" ")}
-                            >
-                              <div className="col-span-2 font-mono text-slate-200">
-                                {hhmm(ts)}
-                              </div>
-                              <div className="col-span-7">
-                                <div className="text-sm font-medium text-white">
-                                  {displayNode(n)}
-                                </div>
-                                <div className="text-xs text-slate-400 mt-0.5">
-                                  {nodeKey}
-                                </div>
-                              </div>
-                              <div className="col-span-3 flex items-center gap-2">
-                                <span
-                                  className={[
-                                    "px-2 py-1 rounded-full text-xs font-semibold",
-                                    tierPillClass(tier),
-                                  ].join(" ")}
-                                >
-                                  {tierZh(tier)}
-                                </span>
-                                <select
-                                  className="text-sm rounded-lg bg-black/30 ring-1 ring-white/15 px-2 py-1 outline-none focus:ring-fuchsia-400/40"
-                                  value={tier}
-                                  onChange={(e) => moveNode(nodeKey, e.target.value)}
-                                >
-                                  {tiers.map((t) => (
-                                    <option key={t} value={t}>
-                                      移动到 {tierZh(t)}
-                                    </option>
-                                  ))}
-                                </select>
+                                <div className="flex-1 h-px bg-white/10" />
                               </div>
                             </div>
-                          </div>
-                        );
-                      });
-                  })()}
+                          ) : (
+                            (() => {
+                              const { ts, nodeKey } = item;
+                              const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
+                              const tier = tierOfNode[nodeKey] ?? "unrated";
+                              return (
+                                <div
+                                  className={[
+                                    "grid grid-cols-12 gap-2 px-4 py-3 items-center border-l-4 border-b border-white/10 transition-colors",
+                                    tierNodeTintClass(tier),
+                                  ].join(" ")}
+                                >
+                                  <div className="col-span-2 font-mono text-slate-200">
+                                    {hhmm(ts)}
+                                  </div>
+                                  <div className="col-span-7">
+                                    <div className="text-sm font-medium text-white">
+                                      {displayNode(n)}
+                                    </div>
+                                    <div className="text-xs text-slate-400 mt-0.5">
+                                      {nodeKey}
+                                    </div>
+                                  </div>
+                                  <div className="col-span-3 flex items-center gap-2">
+                                    <span
+                                      className={[
+                                        "px-2 py-1 rounded-full text-xs font-semibold",
+                                        tierPillClass(tier),
+                                      ].join(" ")}
+                                    >
+                                      {tierZh(tier)}
+                                    </span>
+                                    <select
+                                      className="text-sm rounded-lg bg-black/30 ring-1 ring-white/15 px-2 py-1 outline-none focus:ring-fuchsia-400/40"
+                                      value={tier}
+                                      onChange={(e) =>
+                                        moveNode(nodeKey, e.target.value)
+                                      }
+                                    >
+                                      {tiers.map((t) => (
+                                        <option key={t} value={t}>
+                                          移动到 {tierZh(t)}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </div>
+                              );
+                            })()
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
-              {/* 手机：卡片列表 */}
-              <div className="md:hidden space-y-2">
-                {(() => {
-                  let lastDay = "";
-                  return scheduleRange.items
-                    .filter(({ nodeKey }) => isVisibleNode(nodeKey))
-                    .map(({ ts, nodeKey }) => {
-                      const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
-                      const tier = tierOfNode[nodeKey] ?? "unrated";
-                      const day = dayLabel(ts);
-                      const showDay = day !== lastDay;
-                      lastDay = day;
-                      return (
-                        <div key={`${ts}-${nodeKey}`}>
-                          {showDay ? (
-                            <div className="px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10">
-                              <div className="flex items-center gap-2">
-                                <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
-                                <div className="text-sm font-semibold text-white">
-                                  {day}
-                                </div>
+              {/* 手机：虚拟滚动卡片列表 */}
+              <div
+                ref={mobileScrollRef}
+                className="md:hidden overflow-y-auto"
+                style={{ height: "min(80vh, 700px)" }}
+              >
+                <div
+                  style={{
+                    height: mobileVirtualizer.getTotalSize(),
+                    position: "relative",
+                  }}
+                >
+                  {mobileVirtualizer.getVirtualItems().map((vRow) => {
+                    const item = flatItems[vRow.index]!;
+                    return (
+                      <div
+                        key={item.key}
+                        data-index={vRow.index}
+                        ref={mobileVirtualizer.measureElement}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          transform: `translateY(${vRow.start}px)`,
+                        }}
+                      >
+                        {item.type === "day" ? (
+                          <div className="px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
+                              <div className="text-sm font-semibold text-white">
+                                {item.day}
                               </div>
-                            </div>
-                          ) : null}
-
-                          <div
-                            className={[
-                              "mt-2 rounded-xl ring-1 ring-white/10 border-l-4 p-3",
-                              tierNodeTintClass(tier),
-                            ].join(" ")}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="font-mono text-base text-slate-200">
-                                {hhmm(ts)}
-                              </div>
-                              <span
-                                className={[
-                                  "px-2 py-1 rounded-full text-xs font-semibold",
-                                  tierPillClass(tier),
-                                ].join(" ")}
-                              >
-                                {tierZh(tier)}
-                              </span>
-                            </div>
-
-                            <div className="mt-2 text-sm font-semibold text-white">
-                              {displayNode(n)}
-                            </div>
-                            <div className="mt-1 text-xs text-slate-400">
-                              {nodeKey}
-                            </div>
-
-                            <div className="mt-3">
-                              <select
-                                className="w-full text-sm rounded-lg bg-white/5 ring-1 ring-white/10 px-2 py-2 outline-none"
-                                value={tier}
-                                onChange={(e) =>
-                                  moveNode(nodeKey, e.target.value)
-                                }
-                              >
-                                {tiers.map((t) => (
-                                  <option key={t} value={t}>
-                                    移动到 {tierZh(t)}
-                                  </option>
-                                ))}
-                              </select>
                             </div>
                           </div>
-                        </div>
-                      );
-                    });
-                })()}
+                        ) : (
+                          (() => {
+                            const { ts, nodeKey } = item;
+                            const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
+                            const tier = tierOfNode[nodeKey] ?? "unrated";
+                            return (
+                              <div
+                                className={[
+                                  "mb-2 rounded-xl ring-1 ring-white/10 border-l-4 p-3",
+                                  tierNodeTintClass(tier),
+                                ].join(" ")}
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="font-mono text-base text-slate-200">
+                                    {hhmm(ts)}
+                                  </div>
+                                  <span
+                                    className={[
+                                      "px-2 py-1 rounded-full text-xs font-semibold",
+                                      tierPillClass(tier),
+                                    ].join(" ")}
+                                  >
+                                    {tierZh(tier)}
+                                  </span>
+                                </div>
+
+                                <div className="mt-2 text-sm font-semibold text-white">
+                                  {displayNode(n)}
+                                </div>
+                                <div className="mt-1 text-xs text-slate-400">
+                                  {nodeKey}
+                                </div>
+
+                                <div className="mt-3">
+                                  <select
+                                    className="w-full text-sm rounded-lg bg-white/5 ring-1 ring-white/10 px-2 py-2 outline-none"
+                                    value={tier}
+                                    onChange={(e) =>
+                                      moveNode(nodeKey, e.target.value)
+                                    }
+                                  >
+                                    {tiers.map((t) => (
+                                      <option key={t} value={t}>
+                                        移动到 {tierZh(t)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+                            );
+                          })()
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ) : (
