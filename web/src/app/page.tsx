@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
@@ -37,21 +37,21 @@ function tierZh(tier: string) {
 function tierPillClass(tier: string) {
   switch (tier) {
     case "S":
-      return "bg-amber-400 text-white font-bold shadow-sm";
+      return "bg-fuchsia-500/15 text-fuchsia-200 ring-1 ring-fuchsia-400/30";
     case "A+":
-      return "bg-rose-500 text-white font-bold shadow-sm";
+      return "bg-rose-500/15 text-rose-200 ring-1 ring-rose-400/30";
     case "A":
-      return "bg-orange-400 text-white font-bold shadow-sm";
+      return "bg-amber-500/15 text-amber-200 ring-1 ring-amber-400/30";
     case "A-":
-      return "bg-orange-300 text-white font-bold shadow-sm";
+      return "bg-orange-500/15 text-orange-200 ring-1 ring-orange-400/30";
     case "B":
-      return "bg-violet-500 text-white font-bold shadow-sm";
+      return "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-400/30";
     case "C":
-      return "bg-sky-400 text-white font-bold shadow-sm";
+      return "bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-400/30";
     case "unrated":
-      return "bg-slate-300 text-white font-bold shadow-sm";
+      return "bg-slate-500/10 text-slate-200 ring-1 ring-slate-400/20";
     default:
-      return "bg-slate-300 text-white font-bold shadow-sm";
+      return "bg-slate-500/10 text-slate-200 ring-1 ring-slate-400/20";
   }
 }
 
@@ -59,20 +59,20 @@ function tierNodeTintClass(tier: string) {
   // 用于“节点随评级变色”：深色背景下更明显（渐变底 + 左侧色条 + 轻微发光）
   switch (tier) {
     case "S":
-      return "border-l-amber-400 bg-amber-50";
+      return "border-l-fuchsia-300/90 bg-gradient-to-r from-fuchsia-400/18 to-transparent shadow-[0_0_22px_rgba(232,121,249,0.10)]";
     case "A+":
-      return "border-l-rose-400 bg-rose-50";
+      return "border-l-rose-300/90 bg-gradient-to-r from-rose-400/18 to-transparent shadow-[0_0_22px_rgba(251,113,133,0.10)]";
     case "A":
-      return "border-l-orange-400 bg-orange-50";
+      return "border-l-amber-300/90 bg-gradient-to-r from-amber-300/18 to-transparent shadow-[0_0_22px_rgba(252,211,77,0.10)]";
     case "A-":
-      return "border-l-orange-400 bg-orange-50";
+      return "border-l-orange-300/90 bg-gradient-to-r from-orange-400/18 to-transparent shadow-[0_0_22px_rgba(251,146,60,0.10)]";
     case "B":
-      return "border-l-violet-400 bg-violet-50";
+      return "border-l-emerald-300/90 bg-gradient-to-r from-emerald-400/16 to-transparent shadow-[0_0_22px_rgba(52,211,153,0.10)]";
     case "C":
-      return "border-l-sky-400 bg-sky-50";
+      return "border-l-cyan-300/90 bg-gradient-to-r from-cyan-400/16 to-transparent shadow-[0_0_22px_rgba(34,211,238,0.10)]";
     case "unrated":
     default:
-      return "border-l-pink-200 bg-pink-50/40";
+      return "border-l-slate-300/40 bg-gradient-to-r from-white/[0.06] to-transparent";
   }
 }
 
@@ -424,15 +424,15 @@ export default function Home() {
 
   if (!schedule || !nodesFile || !tierlist) {
     return (
-      <div className="min-h-screen bg-[#fdf2f8] text-violet-950">
+      <div className="min-h-screen bg-[#0B1220] text-slate-100">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-pink-300/20 blur-3xl" />
-          <div className="absolute top-40 -left-24 h-[520px] w-[520px] rounded-full bg-violet-300/15 blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-rose-300/30 blur-3xl" />
+          <div className="absolute -top-24 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-500/18 blur-3xl" />
+          <div className="absolute top-40 -left-24 h-[520px] w-[520px] rounded-full bg-slate-400/16 blur-3xl" />
+          <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-blue-400/10 blur-3xl" />
         </div>
         <main className="relative p-6 max-w-6xl mx-auto">
           <div className="text-lg font-semibold">加载中…</div>
-          <div className="text-base font-medium text-violet-600 mt-2">
+          <div className="text-base font-medium text-slate-300 mt-2">
             首次加载会读 3 个 JSON：仲裁时间、节点中文、默认等级表。
           </div>
         </main>
@@ -445,10 +445,10 @@ export default function Home() {
     <div className="flex flex-wrap gap-2 shrink-0">
       <button
         className={[
-          "px-4 py-2 rounded-full ring-2 ring-pink-100 font-bold",
+          "px-3 py-2 rounded-xl ring-1 ring-white/10 backdrop-blur",
           tab === "schedule"
-            ? "bg-gradient-to-r from-pink-400 to-fuchsia-400 text-white shadow-md"
-            : "bg-white hover:bg-pink-50 text-pink-400",
+            ? "bg-blue-500/25 text-blue-100"
+            : "bg-white/5 hover:bg-white/10 text-slate-200",
         ].join(" ")}
         onClick={() => setTab("schedule")}
       >
@@ -456,10 +456,10 @@ export default function Home() {
       </button>
       <button
         className={[
-          "px-4 py-2 rounded-full ring-2 ring-pink-100 font-bold",
+          "px-3 py-2 rounded-xl ring-1 ring-white/10 backdrop-blur",
           tab === "tierlist"
-            ? "bg-gradient-to-r from-pink-400 to-fuchsia-400 text-white shadow-md"
-            : "bg-white hover:bg-pink-50 text-pink-400",
+            ? "bg-blue-500/25 text-blue-100"
+            : "bg-white/5 hover:bg-white/10 text-slate-200",
         ].join(" ")}
         onClick={() => setTab("tierlist")}
       >
@@ -469,44 +469,44 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fdf2f8] text-violet-950 selection:bg-pink-200/50 selection:text-violet-900">
+    <div className="min-h-screen bg-[#0B1220] text-slate-100 selection:bg-blue-400/25 selection:text-slate-50">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-24 left-1/2 h-[780px] w-[780px] -translate-x-1/2 rounded-full bg-pink-300/40 blur-3xl" />
-        <div className="absolute top-40 -left-24 h-[620px] w-[620px] rounded-full bg-violet-300/35 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-[700px] w-[700px] rounded-full bg-rose-300/30 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(244,114,182,0.12),transparent_62%)]" />
+        <div className="absolute -top-24 left-1/2 h-[780px] w-[780px] -translate-x-1/2 rounded-full bg-blue-500/16 blur-3xl" />
+        <div className="absolute top-40 -left-24 h-[620px] w-[620px] rounded-full bg-slate-400/14 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-[700px] w-[700px] rounded-full bg-blue-400/10 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(148,163,184,0.10),transparent_62%)]" />
       </div>
 
       <main className="relative p-6 max-w-7xl mx-auto space-y-6">
         <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2">
-              <span className="inline-block h-3 w-3 rounded-full bg-gradient-to-br from-pink-400 to-fuchsia-400 shadow-[0_0_12px_rgba(244,114,182,0.8)]" />
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-pink-500 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent">
-                Warframe 仲裁
+              <span className="inline-block h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_18px_rgba(96,165,250,0.9)]" />
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                Warframe Arbitration
               </h1>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
             <button
-              className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-400 to-fuchsia-400 hover:from-pink-500 hover:to-fuchsia-500 text-white font-bold shadow-md transition-all"
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
               onClick={exportScheduleTxt}
-              title="导出当前选择范围的仲裁 TXT"
+              title="导出当前选择范围的仲裁序列 TXT"
             >
               导出仲裁 TXT
             </button>
 
             <button
-              className="px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-400 to-violet-400 hover:from-fuchsia-500 hover:to-violet-500 text-white font-bold shadow-md transition-all"
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
               onClick={exportScheduleJson}
-              title="导出当前选择范围的仲裁 JSON"
+              title="导出当前选择范围的仲裁序列 JSON"
             >
               导出仲裁 JSON
             </button>
 
             <button
-              className="px-4 py-2 rounded-full bg-white hover:bg-pink-50 ring-2 ring-pink-300 text-pink-600 font-bold shadow-sm transition-all"
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
               onClick={resetToDefault}
               title="清空本地保存的等级表，恢复默认"
             >
@@ -515,13 +515,13 @@ export default function Home() {
           </div>
         </header>
 
-        <section className="rounded-2xl bg-white ring-2 ring-pink-100 shadow-[0_4px_20px_rgba(244,114,182,0.15)] p-4">
+        <section className="rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur p-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="w-full rounded-2xl bg-gradient-to-br from-pink-50 to-fuchsia-50 ring-1 ring-pink-200 p-4">
+            <div className="w-full rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="inline-flex items-center gap-2">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-pink-400 shadow-[0_0_12px_rgba(244,114,182,0.7)]" />
-                  <span className="px-2 py-1 rounded-lg bg-pink-500 text-white text-sm font-bold shadow-sm">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
+                  <span className="px-2 py-1 rounded-lg bg-white/10 ring-1 ring-white/15 text-sm font-bold text-white">
                     当前
                   </span>
                 </div>
@@ -538,12 +538,12 @@ export default function Home() {
               </div>
 
               <div className="mt-2 flex items-baseline gap-3">
-                <div className="font-mono text-3xl md:text-4xl text-pink-500 font-extrabold">
+                <div className="font-mono text-3xl md:text-4xl text-white">
                   {current ? hhmm(current.cur.ts) : "—"}
                 </div>
               </div>
 
-              <div className="mt-2 text-base md:text-lg text-violet-900 font-semibold">
+              <div className="mt-2 text-base md:text-lg text-slate-50 font-semibold">
                 {current
                   ? displayNode(
                       nodes[current.cur.nodeKey] ??
@@ -552,17 +552,17 @@ export default function Home() {
                   : "—"}
               </div>
 
-              <div className="mt-3 pt-3 border-t border-pink-100">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-violet-700">
+              <div className="mt-3 pt-3 border-t border-white/10">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-200/90">
                   <span className="inline-flex items-center gap-2">
-                    <span className="inline-block h-2 w-2 rounded-full bg-pink-300 shadow-[0_0_14px_rgba(244,114,182,0.8)]" />
+                    <span className="inline-block h-2 w-2 rounded-full bg-blue-300 shadow-[0_0_14px_rgba(147,197,253,0.85)]" />
                     <span className="font-semibold">下个</span>
                   </span>
                   <span className="font-mono text-base text-white">
                     {current ? hhmm(current.next.ts) : "—"}
                   </span>
-                  <span className="text-slate-400">·</span>
-                  <span className="text-violet-800 font-medium">
+                  <span className="text-slate-300">·</span>
+                  <span className="text-slate-50 font-medium">
                     {current
                       ? displayNode(
                           nodes[current.next.nodeKey] ??
@@ -590,18 +590,18 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white ring-1 ring-pink-100 shadow-sm p-4 space-y-4">
+        <section className="rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur p-4 space-y-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap gap-4 items-center">
               <div className="flex items-center gap-2">
                 <span className="text-base font-semibold text-slate-200">显示范围</span>
-                <div className="inline-flex rounded-full bg-pink-50 ring-2 ring-pink-100 p-1 gap-1">
+                <div className="inline-flex rounded-xl bg-white/5 ring-1 ring-white/10 p-1">
                   <button
                     className={[
                       "px-3 py-1.5 rounded-lg text-sm",
                       rangeHours === 24
-                        ? "px-3 py-1 rounded-full bg-gradient-to-r from-pink-400 to-fuchsia-400 text-white font-bold shadow-sm"
-                        : "px-3 py-1 rounded-full text-pink-400 hover:bg-pink-100 font-medium transition-all",
+                        ? "bg-white/10 text-white"
+                        : "text-slate-300 hover:text-white",
                     ].join(" ")}
                     onClick={() => setRangeHours(24)}
                   >
@@ -611,8 +611,8 @@ export default function Home() {
                     className={[
                       "px-3 py-1.5 rounded-lg text-sm",
                       rangeHours === 168
-                        ? "px-3 py-1 rounded-full bg-gradient-to-r from-pink-400 to-fuchsia-400 text-white font-bold shadow-sm"
-                        : "px-3 py-1 rounded-full text-pink-400 hover:bg-pink-100 font-medium transition-all",
+                        ? "bg-white/10 text-white"
+                        : "text-slate-300 hover:text-white",
                     ].join(" ")}
                     onClick={() => setRangeHours(168)}
                   >
@@ -622,8 +622,8 @@ export default function Home() {
                     className={[
                       "px-3 py-1.5 rounded-lg text-sm",
                       rangeHours === 720
-                        ? "px-3 py-1 rounded-full bg-gradient-to-r from-pink-400 to-fuchsia-400 text-white font-bold shadow-sm"
-                        : "px-3 py-1 rounded-full text-pink-400 hover:bg-pink-100 font-medium transition-all",
+                        ? "bg-white/10 text-white"
+                        : "text-slate-300 hover:text-white",
                     ].join(" ")}
                     onClick={() => setRangeHours(720)}
                   >
@@ -633,8 +633,8 @@ export default function Home() {
                     className={[
                       "px-3 py-1.5 rounded-lg text-sm",
                       rangeHours === 2160
-                        ? "px-3 py-1 rounded-full bg-gradient-to-r from-pink-400 to-fuchsia-400 text-white font-bold shadow-sm"
-                        : "px-3 py-1 rounded-full text-pink-400 hover:bg-pink-100 font-medium transition-all",
+                        ? "bg-white/10 text-white"
+                        : "text-slate-300 hover:text-white",
                     ].join(" ")}
                     onClick={() => setRangeHours(2160)}
                   >
@@ -644,8 +644,8 @@ export default function Home() {
                     className={[
                       "px-3 py-1.5 rounded-lg text-sm",
                       rangeHours === 8760
-                        ? "px-3 py-1 rounded-full bg-gradient-to-r from-pink-400 to-fuchsia-400 text-white font-bold shadow-sm"
-                        : "px-3 py-1 rounded-full text-pink-400 hover:bg-pink-100 font-medium transition-all",
+                        ? "bg-white/10 text-white"
+                        : "text-slate-300 hover:text-white",
                     ].join(" ")}
                     onClick={() => setRangeHours(8760)}
                   >
@@ -687,7 +687,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
               <button
-                className="px-3 py-2 rounded-xl bg-white hover:bg-pink-50 ring-1 ring-pink-200 text-violet-700"
+                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15"
                 onClick={clearFilters}
                 title="清空筛选与搜索"
               >
@@ -698,9 +698,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="space-y-1">
-              <div className="text-sm font-bold text-pink-700">星球</div>
+              <div className="text-sm font-semibold text-slate-200">星球</div>
               <select
-                className="w-full px-3 py-2 rounded-xl bg-white ring-2 ring-pink-200 outline-none focus:ring-pink-400 text-violet-800 font-medium"
+                className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 outline-none focus:ring-blue-300/40"
                 value={filterPlanet}
                 onChange={(e) => setFilterPlanet(e.target.value)}
               >
@@ -714,9 +714,9 @@ export default function Home() {
             </div>
 
             <div className="space-y-1">
-              <div className="text-sm font-bold text-pink-700">任务类型</div>
+              <div className="text-sm font-semibold text-slate-200">任务类型</div>
               <select
-                className="w-full px-3 py-2 rounded-xl bg-white ring-2 ring-pink-200 outline-none focus:ring-pink-400 text-violet-800 font-medium"
+                className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 outline-none focus:ring-blue-300/40"
                 value={filterMission}
                 onChange={(e) => setFilterMission(e.target.value)}
               >
@@ -730,9 +730,9 @@ export default function Home() {
             </div>
 
             <div className="space-y-1">
-              <div className="text-sm font-bold text-pink-700">派系</div>
+              <div className="text-sm font-semibold text-slate-200">派系</div>
               <select
-                className="w-full px-3 py-2 rounded-xl bg-white ring-2 ring-pink-200 outline-none focus:ring-pink-400 text-violet-800 font-medium"
+                className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 outline-none focus:ring-blue-300/40"
                 value={filterFaction}
                 onChange={(e) => setFilterFaction(e.target.value)}
               >
@@ -746,9 +746,9 @@ export default function Home() {
             </div>
 
             <div className="space-y-1">
-              <div className="text-sm font-bold text-pink-700">关键词（可选）</div>
+              <div className="text-sm font-semibold text-slate-200">关键词（可选）</div>
               <input
-                className="w-full px-3 py-2 rounded-xl bg-white ring-2 ring-pink-200 placeholder:text-pink-200 outline-none focus:ring-pink-400 text-violet-800 font-medium"
+                className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 placeholder:text-slate-400 outline-none focus:ring-blue-300/40"
                 placeholder="支持连写或空格：例如 地球拦截 或 地球 拦截"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -763,18 +763,18 @@ export default function Home() {
             <div className="space-y-3">
               <div
                 ref={scheduleTopRef}
-                className="text-base font-medium text-violet-700 flex flex-wrap items-center justify-between gap-3"
+                className="text-base font-medium text-slate-300 flex flex-wrap items-center justify-between gap-3"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <span>未来范围：</span>
                   {scheduleRange.items.length > 0 ? (
                     <>
-                      <span className="font-mono font-bold text-pink-600">
+                      <span className="font-mono text-slate-200">
                         {dayLabel(scheduleRange.items[0]!.ts)}{" "}
                         {hhmm(scheduleRange.items[0]!.ts)}
                       </span>
                       <span className="text-slate-400">→</span>
-                      <span className="font-mono font-bold text-pink-600">
+                      <span className="font-mono text-slate-200">
                         {dayLabel(
                           scheduleRange.items[scheduleRange.items.length - 1]!.ts,
                         )}{" "}
@@ -818,10 +818,10 @@ export default function Home() {
                         }}
                       >
                         {item.type === "day" ? (
-                          <div className="px-3 py-2 rounded-xl bg-pink-50 ring-1 ring-pink-100 mb-2">
+                          <div className="px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 mb-2">
                             <div className="flex items-center gap-2">
-                              <div className="h-2.5 w-2.5 rounded-full bg-pink-400 shadow-[0_0_12px_rgba(244,114,182,0.7)]" />
-                              <div className="text-sm font-bold text-pink-700">{item.day}</div>
+                              <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
+                              <div className="text-sm font-semibold text-white">{item.day}</div>
                             </div>
                           </div>
                         ) : (() => {
@@ -829,15 +829,15 @@ export default function Home() {
                           const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
                           const tier = tierOfNode[nodeKey] ?? "unrated";
                           return (
-                            <div className={["mb-2 rounded-xl ring-1 ring-pink-100 border-l-4 p-3", tierNodeTintClass(tier)].join(" ")}>
+                            <div className={["mb-2 rounded-xl ring-1 ring-white/10 border-l-4 p-3", tierNodeTintClass(tier)].join(" ")}>
                               <div className="flex items-start justify-between gap-2">
-                                <div className="font-mono font-extrabold text-pink-500 text-lg">{hhmm(ts)}</div>
+                                <div className="font-mono text-base text-slate-200">{hhmm(ts)}</div>
                                 <span className={["px-2 py-1 rounded-full text-xs font-semibold", tierPillClass(tier)].join(" ")}>{tierZh(tier)}</span>
                               </div>
-                              <div className="mt-2 text-sm font-bold text-violet-900">{displayNode(n)}</div>
+                              <div className="mt-2 text-sm font-semibold text-white">{displayNode(n)}</div>
                               <div className="mt-1 text-xs text-slate-400">{nodeKey}</div>
                               <div className="mt-3">
-                                <select className="w-full text-sm rounded-lg bg-white ring-2 ring-pink-200 px-2 py-2 rounded-lg outline-none text-pink-700 font-semibold" value={tier} onChange={(e) => moveNode(nodeKey, e.target.value)}>
+                                <select className="w-full text-sm rounded-lg bg-white/5 ring-1 ring-white/10 px-2 py-2 outline-none" value={tier} onChange={(e) => moveNode(nodeKey, e.target.value)}>
                                   {tiers.map((t) => <option key={t} value={t}>移动到 {tierZh(t)}</option>)}
                                 </select>
                               </div>
@@ -852,8 +852,8 @@ export default function Home() {
 
               {/* 桌面/平板：虚拟滚动表格（与原始结构相同：一个 rounded-2xl 容器内含表头+内容） */}
               {!isMobile && (
-                <div className="rounded-2xl bg-white ring-2 ring-pink-100 overflow-hidden shadow-[0_4px_24px_rgba(244,114,182,0.12)]">
-                  <div className="grid grid-cols-12 gap-2 px-4 py-3 text-sm font-bold text-pink-600 border-b border-pink-100 bg-gradient-to-r from-pink-50 to-fuchsia-50">
+                <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden">
+                  <div className="grid grid-cols-12 gap-2 px-4 py-3 text-sm font-semibold text-slate-200 border-b border-white/10">
                     <div className="col-span-2">时间</div>
                     <div className="col-span-7">任务</div>
                     <div className="col-span-3">等级</div>
@@ -879,11 +879,11 @@ export default function Home() {
                           }}
                         >
                           {item.type === "day" ? (
-                            <div className="px-4 py-3 bg-gradient-to-r from-pink-200/80 via-fuchsia-100/60 to-transparent border-y border-pink-200">
+                            <div className="px-4 py-3 bg-gradient-to-r from-blue-400/20 via-slate-400/10 to-transparent border-y border-white/10">
                               <div className="flex items-center gap-3">
-                                <div className="h-2.5 w-2.5 rounded-full bg-pink-400 shadow-[0_0_12px_rgba(244,114,182,0.7)]" />
-                                <div className="text-sm md:text-base font-extrabold text-pink-600 tracking-wide">{item.day}</div>
-                                <div className="flex-1 h-px bg-pink-100" />
+                                <div className="h-2.5 w-2.5 rounded-full bg-blue-300 shadow-[0_0_18px_rgba(147,197,253,0.9)]" />
+                                <div className="text-sm md:text-base font-semibold text-white tracking-wide">{item.day}</div>
+                                <div className="flex-1 h-px bg-white/10" />
                               </div>
                             </div>
                           ) : (() => {
@@ -891,15 +891,15 @@ export default function Home() {
                             const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
                             const tier = tierOfNode[nodeKey] ?? "unrated";
                             return (
-                              <div className={["grid grid-cols-12 gap-2 px-4 py-3 items-center border-l-4 border-b border-pink-100 transition-colors", tierNodeTintClass(tier)].join(" ")}>
-                                <div className="col-span-2 font-mono font-extrabold text-pink-500 text-base">{hhmm(ts)}</div>
+                              <div className={["grid grid-cols-12 gap-2 px-4 py-3 items-center border-l-4 border-b border-white/10 transition-colors", tierNodeTintClass(tier)].join(" ")}>
+                                <div className="col-span-2 font-mono text-slate-200">{hhmm(ts)}</div>
                                 <div className="col-span-7">
-                                  <div className="text-sm font-semibold text-violet-900">{displayNode(n)}</div>
+                                  <div className="text-sm font-medium text-white">{displayNode(n)}</div>
                                   <div className="text-xs text-slate-400 mt-0.5">{nodeKey}</div>
                                 </div>
                                 <div className="col-span-3 flex items-center gap-2">
                                   <span className={["px-2 py-1 rounded-full text-xs font-semibold", tierPillClass(tier)].join(" ")}>{tierZh(tier)}</span>
-                                  <select className="text-sm rounded-lg bg-white ring-2 ring-pink-200 px-2 py-1 rounded-lg outline-none focus:ring-pink-400 text-pink-700 font-semibold" value={tier} onChange={(e) => moveNode(nodeKey, e.target.value)}>
+                                  <select className="text-sm rounded-lg bg-black/30 ring-1 ring-white/15 px-2 py-1 outline-none focus:ring-fuchsia-400/40" value={tier} onChange={(e) => moveNode(nodeKey, e.target.value)}>
                                     {tiers.map((t) => <option key={t} value={t}>移动到 {tierZh(t)}</option>)}
                                   </select>
                                 </div>
@@ -927,9 +927,9 @@ export default function Home() {
                   return (
                     <div
                       key={tier}
-                      className="rounded-2xl bg-white ring-2 ring-pink-100 overflow-hidden shadow-[0_4px_24px_rgba(244,114,182,0.12)]"
+                      className="rounded-2xl bg-black/20 ring-1 ring-white/15 overflow-hidden"
                     >
-                      <div className="px-4 py-3 border-b border-pink-50 flex items-center justify-between bg-pink-50/40">
+                      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span
                             className={[
@@ -962,7 +962,7 @@ export default function Home() {
                                   tierNodeTintClass(tier),
                                 ].join(" ")}
                               >
-                                <div className="text-sm font-semibold text-violet-900">
+                                <div className="text-sm font-medium text-white">
                                   {text}
                                 </div>
                                 <div className="text-xs text-slate-400 mt-1">
@@ -978,7 +978,7 @@ export default function Home() {
                                     {tierZh(tier)}
                                   </span>
                                   <select
-                                    className="text-sm rounded-lg bg-white ring-2 ring-pink-200 px-2 py-1 rounded-lg outline-none focus:ring-pink-400 text-pink-700 font-semibold"
+                                    className="text-sm rounded-lg bg-black/30 ring-1 ring-white/15 px-2 py-1 outline-none focus:ring-fuchsia-400/40"
                                     value={tier}
                                     onChange={(e) =>
                                       moveNode(nodeKey, e.target.value)
@@ -1008,7 +1008,7 @@ export default function Home() {
 
       {showScrollTop && tab === "schedule" ? (
         <button
-          className="fixed bottom-5 right-5 h-12 w-12 rounded-full bg-gradient-to-br from-pink-400 to-fuchsia-500 hover:from-pink-500 hover:to-fuchsia-600 shadow-[0_4px_16px_rgba(244,114,182,0.5)] flex items-center justify-center text-white font-bold transition-all"
+          className="fixed bottom-5 right-5 h-10 w-10 rounded-full bg-white/10 hover:bg-white/15 ring-1 ring-white/20 backdrop-blur flex items-center justify-center"
           onClick={() =>
             scheduleTopRef.current?.scrollIntoView({ behavior: "smooth" })
           }
