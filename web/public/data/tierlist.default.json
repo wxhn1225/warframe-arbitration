@@ -11,49 +11,35 @@
   ],
   "tierBuckets": {
     "S": [
+      "SolNode450",
       "SolNode106",
-      "SolNode25"
+      "SolNode25",
+      "SolNode64"
     ],
     "A+": [
-      "SolNode147",
-      "SolNode64",
-      "ClanNode22",
-      "SolNode149",
-      "SolNode224",
-      "SolNode42",
-      "SolNode195",
-      "SolNode450"
+      "SolNode23",
+      "SolNode172",
+      "SolNode719",
+      "SolNode147"
     ],
     "A": [
-      "ClanNode24",
-      "SolNode707",
-      "SolNode719",
-      "SolNode72"
+      "SolNode224",
+      "SolNode167",
+      "SolNode412",
+      "SolNode211"
     ],
     "A-": [
-      "ClanNode18",
-      "SolNode122",
-      "SolNode167",
-      "SolNode164",
-      "SolNode212"
+      "SolNode43",
+      "SolNode85"
     ],
-    "B": [
-      "ClanNode6",
-      "SolNode402",
-      "SolNode408",
-      "SolNode412",
-      "ClanNode15",
-      "SolNode130"
-    ],
+    "B": [],
     "C": [
-      "ClanNode8",
-      "SolNode46",
-      "SolNode305",
-      "ClanNode16",
+      "SolNode185",
       "SolNode18"
     ],
     "未评级": [
       "ClanNode14",
+      "ClanNode16",
       "ClanNode17",
       "ClanNode19",
       "ClanNode2",
@@ -77,14 +63,10 @@
       "SolNode16",
       "SolNode166",
       "SolNode17",
-      "SolNode172",
       "SolNode177",
-      "SolNode185",
       "SolNode187",
-      "SolNode211",
       "SolNode216",
       "SolNode22",
-      "SolNode23",
       "SolNode230",
       "SolNode233",
       "SolNode26",
@@ -95,7 +77,6 @@
       "SolNode39",
       "SolNode405",
       "SolNode409",
-      "SolNode43",
       "SolNode6",
       "SolNode711",
       "SolNode718",
@@ -104,14 +85,31 @@
       "SolNode94",
       "SolNode96",
       "SolNode232",
-      "SolNode85",
       "ClanNode12",
       "ClanNode11",
       "ClanNode13",
       "ClanNode0",
       "ClanNode1",
-      "ClanNode10"
+      "ClanNode10",
+      "ClanNode22",
+      "SolNode149",
+      "SolNode42",
+      "SolNode195",
+      "ClanNode24",
+      "SolNode707",
+      "SolNode72",
+      "ClanNode18",
+      "SolNode122",
+      "SolNode164",
+      "SolNode212",
+      "ClanNode6",
+      "ClanNode8",
+      "SolNode46",
+      "SolNode305",
+      "SolNode402",
+      "SolNode408",
+      "ClanNode15",
+      "SolNode130"
     ]
-  },
-  "notes": "默认等级表（来自你导出的 tierlist.json）。"
+  }
 }

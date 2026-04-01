@@ -110,6 +110,7 @@ export default function Home() {
   const [filterFaction, setFilterFaction] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isDevMode, setIsDevMode] = useState(false);
 
   const scheduleTopRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -121,6 +122,11 @@ export default function Home() {
     const fn = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener("change", fn);
     return () => mq.removeEventListener("change", fn);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setIsDevMode(params.get("dev") === "1");
   }, []);
 
   useLayoutEffect(() => {
@@ -383,6 +389,10 @@ export default function Home() {
     location.reload();
   }
 
+  function exportTierlistJson() {
+    downloadJson("tierlist.default.json", tierlist);
+  }
+
   function exportScheduleTxt() {
     const days = Math.round(rangeHours / 24);
     const lines = scheduleRange.items
@@ -504,6 +514,16 @@ export default function Home() {
             >
               导出仲裁 JSON
             </button>
+
+            {isDevMode && (
+              <button
+                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
+                onClick={exportTierlistJson}
+                title="导出当前等级表 JSON（可发给开发者更新默认值）"
+              >
+                导出等级表
+              </button>
+            )}
 
             <button
               className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/15 backdrop-blur"
