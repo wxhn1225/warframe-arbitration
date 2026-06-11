@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Warframe Arbitration",
-  description: "Warframe 仲裁整点时间表与等级筛选",
+  title: "Warframe 仲裁 · 整点时间表",
+  description: "Warframe 仲裁整点轮换时间表与节点等级筛选",
+};
+
+export const viewport = {
+  themeColor: "#060a14",
 };
 
 export default function RootLayout({

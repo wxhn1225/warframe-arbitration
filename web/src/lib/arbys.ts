@@ -94,11 +94,12 @@ export function normalizeTierlist(t: Tierlist, allNodeKeys: string[]) {
 
   // 把输入的 buckets 合并进来；兼容 “未评级” 这个键名
   if (t?.tierBuckets && typeof t.tierBuckets === "object") {
+    const buckets = t.tierBuckets as Record<string, unknown>;
     for (const tier of tiers) {
-      const arr = (t.tierBuckets as any)[tier];
+      const arr = buckets[tier];
       if (Array.isArray(arr)) tierBuckets[tier] = [...arr];
     }
-    const zhUnrated = (t.tierBuckets as any)["未评级"];
+    const zhUnrated = buckets["未评级"];
     if (Array.isArray(zhUnrated)) tierBuckets.unrated.push(...zhUnrated);
 
     // 旧的/未知的 tiers（例如 D/F）折叠进 C
