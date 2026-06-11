@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Warframe 仲裁 · 整点时间表",
+  title: "Warframe Arbitration",
   description: "Warframe 仲裁整点轮换时间表与节点等级筛选",
 };
 
