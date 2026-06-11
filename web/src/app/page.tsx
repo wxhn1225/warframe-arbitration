@@ -77,39 +77,39 @@ type TierStyle = {
 // 玻璃面板上的等级配色：实心彩色徽章 + 整行渐变着色，等级差异一眼可辨
 const TIER_STYLES: Record<string, TierStyle> = {
   S: {
-    chip: "bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-[0_2px_10px_rgba(245,158,11,0.45)]",
-    bar: "border-l-amber-500 bg-gradient-to-r from-amber-200/95 via-amber-100/70 to-white/45",
+    chip: "bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-[0_2px_12px_rgba(245,158,11,0.55)]",
+    bar: "border-l-amber-400 bg-gradient-to-r from-amber-400/35 via-amber-400/15 to-transparent",
     strip: "bg-gradient-to-r from-amber-400 to-orange-500",
   },
   "A+": {
-    chip: "bg-rose-500 text-white shadow-[0_2px_10px_rgba(244,63,94,0.35)]",
-    bar: "border-l-rose-500 bg-gradient-to-r from-rose-200/90 via-rose-100/60 to-white/45",
+    chip: "bg-rose-500 text-white shadow-[0_2px_12px_rgba(244,63,94,0.5)]",
+    bar: "border-l-rose-400 bg-gradient-to-r from-rose-500/30 via-rose-500/12 to-transparent",
     strip: "bg-rose-500",
   },
   A: {
-    chip: "bg-orange-500 text-white shadow-[0_2px_10px_rgba(249,115,22,0.35)]",
-    bar: "border-l-orange-500 bg-gradient-to-r from-orange-200/90 via-orange-100/60 to-white/45",
+    chip: "bg-orange-500 text-white shadow-[0_2px_12px_rgba(249,115,22,0.5)]",
+    bar: "border-l-orange-400 bg-gradient-to-r from-orange-500/30 via-orange-500/12 to-transparent",
     strip: "bg-orange-500",
   },
   "A-": {
-    chip: "bg-yellow-400 text-yellow-950 shadow-[0_2px_10px_rgba(250,204,21,0.4)]",
-    bar: "border-l-yellow-400 bg-gradient-to-r from-yellow-200/90 via-yellow-100/60 to-white/45",
+    chip: "bg-yellow-400 text-yellow-950 shadow-[0_2px_12px_rgba(250,204,21,0.5)]",
+    bar: "border-l-yellow-300 bg-gradient-to-r from-yellow-400/28 via-yellow-400/12 to-transparent",
     strip: "bg-yellow-400",
   },
   B: {
-    chip: "bg-emerald-500 text-white shadow-[0_2px_10px_rgba(16,185,129,0.35)]",
-    bar: "border-l-emerald-500 bg-gradient-to-r from-emerald-200/85 via-emerald-100/55 to-white/45",
+    chip: "bg-emerald-500 text-white shadow-[0_2px_12px_rgba(16,185,129,0.5)]",
+    bar: "border-l-emerald-400 bg-gradient-to-r from-emerald-500/28 via-emerald-500/12 to-transparent",
     strip: "bg-emerald-500",
   },
   C: {
-    chip: "bg-sky-500 text-white shadow-[0_2px_10px_rgba(14,165,233,0.35)]",
-    bar: "border-l-sky-500 bg-gradient-to-r from-sky-200/85 via-sky-100/55 to-white/45",
+    chip: "bg-sky-500 text-white shadow-[0_2px_12px_rgba(14,165,233,0.5)]",
+    bar: "border-l-sky-400 bg-gradient-to-r from-sky-500/28 via-sky-500/12 to-transparent",
     strip: "bg-sky-500",
   },
   unrated: {
-    chip: "bg-white/70 text-neutral-500 ring-1 ring-inset ring-neutral-200/80",
-    bar: "border-l-neutral-300 bg-white/40",
-    strip: "bg-neutral-300",
+    chip: "bg-white/15 text-white/75 ring-1 ring-inset ring-white/25",
+    bar: "border-l-white/30 bg-white/[0.05]",
+    strip: "bg-white/30",
   },
 };
 
@@ -155,15 +155,15 @@ function HourProgress({ startTs }: { startTs: number }) {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/60 shadow-[inset_0_1px_2px_rgba(38,56,105,0.12)]">
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/15 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]">
         <div
           className="h-full rounded-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 shadow-[0_0_12px_rgba(99,102,241,0.5)] transition-[width] duration-1000 ease-linear"
           style={{ width: `${(clamped / 3600) * 100}%` }}
         />
       </div>
-      <div className="shrink-0 text-sm text-neutral-500">
+      <div className="shrink-0 text-sm text-white/60">
         剩余{" "}
-        <span className="font-mono text-base font-semibold text-neutral-900 tabular-nums">
+        <span className="font-mono text-base font-semibold text-white tabular-nums">
           {mm}:{ss}
         </span>
       </div>
@@ -200,12 +200,12 @@ function SelectField({
 }) {
   return (
     <div className="space-y-1.5">
-      <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+      <div className="text-xs font-semibold uppercase tracking-wider text-white/55">
         {label}
       </div>
       <div className="relative">
         <select
-          className="w-full appearance-none rounded-xl border border-white/70 bg-white/55 px-3.5 py-2.5 pr-10 text-neutral-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-md outline-none transition hover:bg-white/75 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
+          className="w-full appearance-none rounded-xl border border-white/25 bg-white/10 px-3.5 py-2.5 pr-10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md outline-none transition hover:bg-white/15 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         >
@@ -217,7 +217,7 @@ function SelectField({
           ))}
         </select>
         <svg
-          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
+          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/55"
           width="14"
           height="14"
           viewBox="0 0 24 24"
@@ -238,16 +238,17 @@ function SelectField({
 
 const CARD = "glass rounded-3xl";
 const GHOST_BTN =
-  "glass-inner rounded-xl px-3.5 py-2 text-sm font-medium text-neutral-700 transition hover:bg-white/80 hover:text-neutral-900 hover:shadow-md";
+  "glass-inner rounded-xl px-3.5 py-2 text-sm font-medium text-white/80 transition hover:bg-white/20 hover:text-white hover:shadow-md";
 
-/** 全页背景：浅色基底 + 缓慢漂浮的彩色光斑（液态玻璃的折射源） */
+/** 全页背景：鲜艳的画面 + 轻微暗角，玻璃卡片的折射源 */
 function Backdrop() {
   return (
-    <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden">
-      <div className="blob blob-1" />
-      <div className="blob blob-2" />
-      <div className="blob blob-3" />
-      <div className="blob blob-4" />
+    <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden bg-[#11131d]">
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${dataUrl("/bg.jpg")})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0c16]/55 via-[#0a0c16]/30 to-[#0a0c16]/70" />
     </div>
   );
 }
@@ -615,24 +616,24 @@ export default function Home() {
         <Backdrop />
         <main className="mx-auto max-w-6xl space-y-6 px-5 py-10 md:px-8">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 animate-pulse rounded-xl bg-neutral-200/80" />
+            <div className="h-10 w-10 animate-pulse rounded-xl bg-white/15" />
             <div className="space-y-2">
-              <div className="h-5 w-48 animate-pulse rounded-md bg-neutral-200/80" />
-              <div className="h-3 w-32 animate-pulse rounded-md bg-neutral-200/60" />
+              <div className="h-5 w-48 animate-pulse rounded-md bg-white/15" />
+              <div className="h-3 w-32 animate-pulse rounded-md bg-white/10" />
             </div>
           </div>
-          <div className="h-44 animate-pulse rounded-2xl bg-neutral-200/50" />
-          <div className="h-28 animate-pulse rounded-2xl bg-neutral-200/50" />
+          <div className="h-44 animate-pulse rounded-2xl bg-white/10" />
+          <div className="h-28 animate-pulse rounded-2xl bg-white/10" />
           <div className="space-y-2">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="h-12 animate-pulse rounded-xl bg-neutral-200/40"
+                className="h-12 animate-pulse rounded-xl bg-white/10"
                 style={{ animationDelay: `${i * 80}ms` }}
               />
             ))}
           </div>
-          <div className="text-sm text-neutral-400">正在加载仲裁数据…</div>
+          <div className="text-sm text-white/55">正在加载仲裁数据…</div>
         </main>
       </div>
     );
@@ -659,8 +660,8 @@ export default function Home() {
           className={[
             "rounded-md px-4 py-1.5 text-sm font-semibold transition",
             tab === key
-              ? "bg-neutral-900 text-white shadow-sm"
-              : "text-neutral-500 hover:text-neutral-900",
+              ? "bg-white text-neutral-900 shadow-sm"
+              : "text-white/60 hover:text-white",
           ].join(" ")}
           onClick={() => setTab(key)}
         >
@@ -700,10 +701,10 @@ export default function Home() {
               </svg>
             </div>
             <div>
-              <h1 className="text-[26px] font-extrabold leading-none tracking-tight text-neutral-900">
+              <h1 className="text-[26px] font-extrabold leading-none tracking-tight text-white">
                 仲裁
               </h1>
-              <p className="mt-1.5 font-mono text-[11px] font-medium tracking-[0.24em] text-neutral-400">
+              <p className="mt-1.5 font-mono text-[11px] font-medium tracking-[0.24em] text-white/55">
                 WARFRAME ARBITRATION
               </p>
             </div>
@@ -749,22 +750,22 @@ export default function Home() {
             <div className="min-w-0 flex flex-col">
               <div className="flex items-center gap-2.5">
                 <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-white/55">
                   Live · 正在进行
                 </span>
                 {current ? <TierChip tier={currentTier} /> : null}
               </div>
 
               <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                <div className="font-mono text-5xl font-bold tabular-nums tracking-tight text-neutral-900 md:text-6xl">
+                <div className="font-mono text-5xl font-bold tabular-nums tracking-tight text-white md:text-6xl">
                   {current ? hhmm(current.cur.ts) : "—"}
                 </div>
-                <div className="min-w-0 truncate text-base font-semibold text-neutral-700 md:text-xl">
+                <div className="min-w-0 truncate text-base font-semibold text-white/80 md:text-xl">
                   {currentNode ? displayNode(currentNode) : "—"}
                 </div>
               </div>
               {current ? (
-                <div className="mt-1 font-mono text-xs text-neutral-400">
+                <div className="mt-1 font-mono text-xs text-white/55">
                   {current.cur.nodeKey}
                 </div>
               ) : null}
@@ -778,19 +779,19 @@ export default function Home() {
 
             {current ? (
               <aside className="glass-inner rounded-2xl p-4 md:p-5">
-                <div className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-neutral-400">
+                <div className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
                   Next · 下一场
                 </div>
                 <div className="mt-2.5 flex items-center gap-2.5">
-                  <span className="font-mono text-2xl font-semibold tabular-nums text-neutral-900">
+                  <span className="font-mono text-2xl font-semibold tabular-nums text-white">
                     {hhmm(current.next.ts)}
                   </span>
                   <TierChip tier={nextTier} />
                 </div>
-                <div className="mt-1.5 text-sm leading-snug text-neutral-600">
+                <div className="mt-1.5 text-sm leading-snug text-white/70">
                   {nextNode ? displayNode(nextNode) : "—"}
                 </div>
-                <div className="mt-1 font-mono text-xs text-neutral-400">
+                <div className="mt-1 font-mono text-xs text-white/55">
                   {current.next.nodeKey}
                 </div>
               </aside>
@@ -803,7 +804,7 @@ export default function Home() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
               <div className="space-y-1.5">
-                <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                <div className="text-xs font-semibold uppercase tracking-wider text-white/55">
                   显示范围
                 </div>
                 <div className="glass-inner inline-flex rounded-xl p-1">
@@ -813,8 +814,8 @@ export default function Home() {
                       className={[
                         "rounded-lg px-3 py-1.5 text-sm font-medium transition",
                         rangeHours === hours
-                          ? "bg-neutral-900 font-semibold text-white shadow-md"
-                          : "text-neutral-500 hover:text-neutral-900",
+                          ? "bg-white font-semibold text-neutral-900 shadow-md"
+                          : "text-white/60 hover:text-white",
                       ].join(" ")}
                       onClick={() => setRangeHours(hours)}
                     >
@@ -825,7 +826,7 @@ export default function Home() {
               </div>
 
               <div className="space-y-1.5">
-                <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                <div className="text-xs font-semibold uppercase tracking-wider text-white/55">
                   筛选等级
                 </div>
                 <div className="flex flex-wrap gap-1.5 pt-0.5">
@@ -842,7 +843,7 @@ export default function Home() {
                           "rounded-md px-2.5 py-1 text-xs font-bold tracking-wide transition",
                           active
                             ? tierStyle(tier).chip
-                            : "border border-dashed border-neutral-300 bg-white/40 text-neutral-400 hover:border-neutral-400 hover:text-neutral-600",
+                            : "border border-dashed border-white/30 bg-white/5 text-white/55 hover:border-white/50 hover:text-white/80",
                         ].join(" ")}
                         title={active ? "点击隐藏该等级" : "点击显示该等级"}
                       >
@@ -858,8 +859,8 @@ export default function Home() {
               className={[
                 "shrink-0 rounded-xl px-3.5 py-2 text-sm font-medium transition",
                 hasActiveFilter
-                  ? "bg-neutral-900 text-white shadow-md hover:bg-neutral-700"
-                  : "glass-inner text-neutral-400",
+                  ? "bg-white text-neutral-900 shadow-md hover:bg-white/85"
+                  : "glass-inner text-white/55",
               ].join(" ")}
               onClick={clearFilters}
               title="清空筛选与搜索"
@@ -891,12 +892,12 @@ export default function Home() {
               options={factionOptions}
             />
             <div className="space-y-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+              <div className="text-xs font-semibold uppercase tracking-wider text-white/55">
                 关键词
               </div>
               <div className="relative">
                 <svg
-                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/55"
                   width="15"
                   height="15"
                   viewBox="0 0 24 24"
@@ -911,13 +912,13 @@ export default function Home() {
                   />
                 </svg>
                 <input
-                  className="w-full rounded-xl border border-white/70 bg-white/55 py-2.5 pl-10 pr-3.5 text-neutral-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-md outline-none transition placeholder:text-neutral-400 hover:bg-white/75 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
+                  className="w-full rounded-xl border border-white/25 bg-white/10 py-2.5 pl-10 pr-3.5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md outline-none transition placeholder:text-white/40 hover:bg-white/15 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
                   placeholder="例如 地球拦截 或 地球 拦截"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              <div className="text-xs text-neutral-400">
+              <div className="text-xs text-white/55">
                 匹配星球 / 任务 / 派系 / 节点名 / Key
               </div>
             </div>
@@ -927,21 +928,21 @@ export default function Home() {
             <div className="space-y-3">
               <div
                 ref={scheduleTopRef}
-                className="flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-500"
+                className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/60"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <span>未来范围</span>
                   {rangeItems.length > 0 ? (
                     <>
-                      <span className="font-mono tabular-nums text-neutral-700">
+                      <span className="font-mono tabular-nums text-white/80">
                         {dayLabel(rangeItems[0]!.ts)} {hhmm(rangeItems[0]!.ts)}
                       </span>
-                      <span className="text-neutral-300">→</span>
-                      <span className="font-mono tabular-nums text-neutral-700">
+                      <span className="text-white/35">→</span>
+                      <span className="font-mono tabular-nums text-white/80">
                         {dayLabel(rangeItems[rangeItems.length - 1]!.ts)}{" "}
                         {hhmm(rangeItems[rangeItems.length - 1]!.ts)}
                       </span>
-                      <span className="text-neutral-400">
+                      <span className="text-white/55">
                         （{rangeItems.length} 条 / {Math.round(rangeItems.length / 24)} 天）
                       </span>
                     </>
@@ -953,7 +954,7 @@ export default function Home() {
               </div>
 
               {flatItems.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/80 bg-white/30 py-16 text-center text-neutral-400 backdrop-blur-sm">
+                <div className="rounded-2xl border border-dashed border-white/25 bg-white/5 py-16 text-center text-white/60 backdrop-blur-sm">
                   没有符合当前筛选条件的仲裁
                 </div>
               ) : null}
@@ -983,7 +984,7 @@ export default function Home() {
                         {item.type === "day" ? (
                           <div className="glass-inner mb-2 flex items-center gap-2 rounded-xl px-3.5 py-2">
                             <span className="inline-block h-1.5 w-1.5 rotate-45 bg-gradient-to-br from-sky-500 to-violet-500" />
-                            <span className="text-sm font-bold tracking-wide text-neutral-800">
+                            <span className="text-sm font-bold tracking-wide text-white/90">
                               {item.day}
                             </span>
                           </div>
@@ -994,25 +995,25 @@ export default function Home() {
                           return (
                             <div
                               className={[
-                                "mb-2 rounded-xl border border-white/70 border-l-4 p-3.5 shadow-[0_2px_8px_rgba(38,56,105,0.06)] backdrop-blur-sm",
+                                "mb-2 rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md",
                                 tierStyle(tier).bar,
                               ].join(" ")}
                             >
                               <div className="flex items-start justify-between gap-2">
-                                <div className="font-mono text-base font-semibold tabular-nums text-neutral-900">
+                                <div className="font-mono text-base font-semibold tabular-nums text-white">
                                   {hhmm(ts)}
                                 </div>
                                 <TierChip tier={tier} />
                               </div>
-                              <div className="mt-1.5 text-sm font-semibold text-neutral-800">
+                              <div className="mt-1.5 text-sm font-semibold text-white/90">
                                 {displayNode(n)}
                               </div>
-                              <div className="mt-0.5 font-mono text-xs text-neutral-400">
+                              <div className="mt-0.5 font-mono text-xs text-white/55">
                                 {nodeKey}
                               </div>
                               <div className="mt-3">
                                 <select
-                                  className="w-full rounded-lg border border-white/70 bg-white/60 px-2.5 py-2 text-sm text-neutral-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
+                                  className="w-full rounded-lg border border-white/25 bg-white/10 px-2.5 py-2 text-sm text-white/90 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
                                   value={tier}
                                   onChange={(e) => moveNode(nodeKey, e.target.value)}
                                 >
@@ -1034,8 +1035,8 @@ export default function Home() {
 
               {/* 桌面/平板：虚拟滚动表格 */}
               {!isMobile && flatItems.length > 0 && (
-                <div className="overflow-hidden rounded-2xl border border-white/70 bg-white/35 backdrop-blur-md">
-                  <div className="grid grid-cols-12 gap-2 border-b border-white/70 bg-white/50 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-neutral-400">
+                <div className="overflow-hidden rounded-2xl border border-white/20 bg-white/[0.06] backdrop-blur-md">
+                  <div className="grid grid-cols-12 gap-2 border-b border-white/15 bg-white/10 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white/55">
                     <div className="col-span-2">时间</div>
                     <div className="col-span-7">任务</div>
                     <div className="col-span-3">等级</div>
@@ -1061,12 +1062,12 @@ export default function Home() {
                           }}
                         >
                           {item.type === "day" ? (
-                            <div className="flex items-center gap-3 border-b border-white/60 bg-white/55 px-5 py-3 backdrop-blur-sm">
+                            <div className="flex items-center gap-3 border-b border-white/15 bg-white/10 px-5 py-3 backdrop-blur-sm">
                               <span className="inline-block h-1.5 w-1.5 rotate-45 bg-gradient-to-br from-sky-500 to-violet-500" />
-                              <span className="text-sm font-bold tracking-wide text-neutral-800">
+                              <span className="text-sm font-bold tracking-wide text-white/90">
                                 {item.day}
                               </span>
-                              <div className="h-px flex-1 bg-neutral-300/50" />
+                              <div className="h-px flex-1 bg-white/20" />
                             </div>
                           ) : (() => {
                             const { ts, nodeKey } = item;
@@ -1075,25 +1076,25 @@ export default function Home() {
                             return (
                               <div
                                 className={[
-                                  "grid grid-cols-12 items-center gap-2 border-b border-white/50 border-l-4 px-5 py-3 transition hover:brightness-[0.96]",
+                                  "grid grid-cols-12 items-center gap-2 border-b border-white/10 border-l-4 px-5 py-3 transition hover:brightness-125",
                                   tierStyle(tier).bar,
                                 ].join(" ")}
                               >
-                                <div className="col-span-2 font-mono tabular-nums text-neutral-700">
+                                <div className="col-span-2 font-mono tabular-nums text-white/80">
                                   {hhmm(ts)}
                                 </div>
                                 <div className="col-span-7 min-w-0">
-                                  <div className="truncate text-sm font-semibold text-neutral-800">
+                                  <div className="truncate text-sm font-semibold text-white/90">
                                     {displayNode(n)}
                                   </div>
-                                  <div className="mt-0.5 font-mono text-xs text-neutral-400">
+                                  <div className="mt-0.5 font-mono text-xs text-white/55">
                                     {nodeKey}
                                   </div>
                                 </div>
                                 <div className="col-span-3 flex items-center gap-2.5">
                                   <TierChip tier={tier} />
                                   <select
-                                    className="rounded-lg border border-white/80 bg-white/70 px-2 py-1.5 text-sm text-neutral-700 shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
+                                    className="rounded-lg border border-white/25 bg-white/10 px-2 py-1.5 text-sm text-white/90 shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
                                     value={tier}
                                     onChange={(e) => moveNode(nodeKey, e.target.value)}
                                   >
@@ -1126,22 +1127,22 @@ export default function Home() {
                     return (
                       <div
                         key={tier}
-                        className="overflow-hidden rounded-2xl border border-white/70 bg-white/40 backdrop-blur-md"
+                        className="overflow-hidden rounded-2xl border border-white/20 bg-white/[0.06] backdrop-blur-md"
                       >
                         <div className={["h-1 w-full", tierStyle(tier).strip].join(" ")} />
-                        <div className="flex items-center justify-between border-b border-white/70 bg-white/40 px-4 py-3">
+                        <div className="flex items-center justify-between border-b border-white/15 bg-white/5 px-4 py-3">
                           <div className="flex items-center gap-2.5">
                             <TierChip tier={tier} />
-                            <span className="text-sm font-bold text-neutral-800">节点</span>
+                            <span className="text-sm font-bold text-white/90">节点</span>
                           </div>
-                          <div className="font-mono text-xs tabular-nums text-neutral-400">
+                          <div className="font-mono text-xs tabular-nums text-white/55">
                             {visibleKeys.length}/{keys.length}
                           </div>
                         </div>
 
                         <div className="space-y-2 p-3">
                           {visibleKeys.length === 0 ? (
-                            <div className="px-1 py-2 text-sm text-neutral-400">（空）</div>
+                            <div className="px-1 py-2 text-sm text-white/55">（空）</div>
                           ) : (
                             visibleKeys.map((nodeKey) => {
                               const n = nodes[nodeKey];
@@ -1151,20 +1152,20 @@ export default function Home() {
                                 <div
                                   key={nodeKey}
                                   className={[
-                                    "rounded-xl border border-white/70 border-l-4 p-3.5 shadow-[0_2px_8px_rgba(38,56,105,0.06)] transition hover:brightness-[0.97]",
+                                    "rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition hover:brightness-125",
                                     tierStyle(nodeTier).bar,
                                   ].join(" ")}
                                 >
-                                  <div className="text-sm font-semibold text-neutral-800">
+                                  <div className="text-sm font-semibold text-white/90">
                                     {text}
                                   </div>
-                                  <div className="mt-1 font-mono text-xs text-neutral-400">
+                                  <div className="mt-1 font-mono text-xs text-white/55">
                                     {nodeKey}
                                   </div>
                                   <div className="mt-3 flex flex-wrap items-center gap-2.5">
                                     <TierChip tier={nodeTier} />
                                     <select
-                                      className="rounded-lg border border-white/80 bg-white/70 px-2 py-1.5 text-sm text-neutral-700 shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
+                                      className="rounded-lg border border-white/25 bg-white/10 px-2 py-1.5 text-sm text-white/90 shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
                                       value={nodeTier}
                                       onChange={(e) => moveNode(nodeKey, e.target.value)}
                                     >
@@ -1188,14 +1189,14 @@ export default function Home() {
           )}
         </section>
 
-        <footer className="pb-2 pt-1 text-center text-xs text-neutral-400">
+        <footer className="pb-2 pt-1 text-center text-xs text-white/55">
           整点轮换 · 等级表保存在本地浏览器，可随时恢复默认
         </footer>
       </main>
 
       {showScrollTop && tab === "schedule" ? (
         <button
-          className="fixed bottom-6 right-6 flex h-11 w-11 items-center justify-center rounded-full bg-neutral-900 text-white shadow-[0_4px_16px_rgba(0,0,0,0.2)] transition hover:bg-neutral-700 active:scale-95"
+          className="fixed bottom-6 right-6 flex h-11 w-11 items-center justify-center rounded-full bg-white text-neutral-900 shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition hover:bg-white/85 active:scale-95"
           onClick={() =>
             scheduleTopRef.current?.scrollIntoView({ behavior: "smooth" })
           }
