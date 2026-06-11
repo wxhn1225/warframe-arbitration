@@ -4,12 +4,14 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import {
   buildTierOfNode,
+  decodeSchedule,
   displayNode,
   downloadJson,
   downloadText,
   findCurrentIndex,
   hhmm,
   normalizeTierlist,
+  type CompactScheduleFile,
   type NodesZhFile,
   type NodeInfo,
   type ScheduleEntry,
@@ -17,6 +19,7 @@ import {
 } from "@/lib/arbys";
 
 const STORAGE_KEY = "arbys.tierlist.v1";
+const EMPTY_NODES: Record<string, NodeInfo> = {};
 const BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
 const dataUrl = (p: string) => `${BASE_PATH}${p.startsWith("/") ? "" : "/"}${p}`;
 
@@ -114,7 +117,7 @@ export default function Home() {
 
   const scheduleTopRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
-  const scrollMargin = useRef(0);
+  const [listScrollMargin, setListScrollMargin] = useState(0);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -129,12 +132,17 @@ export default function Home() {
     setIsDevMode(params.get("dev") === "1");
   }, []);
 
+  // 只在挂载/视图切换/窗口尺寸变化时测量列表顶部偏移，避免每次渲染都强制 reflow
   useLayoutEffect(() => {
-    if (listRef.current) {
-      scrollMargin.current =
-        listRef.current.getBoundingClientRect().top + window.scrollY;
-    }
-  });
+    const measure = () => {
+      if (!listRef.current) return;
+      const m = listRef.current.getBoundingClientRect().top + window.scrollY;
+      setListScrollMargin((prev) => (Math.abs(prev - m) > 1 ? m : prev));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [tab, isMobile]);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 30_000);
@@ -153,12 +161,12 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       const [s, n, td] = await Promise.all([
-        fetch(dataUrl("/data/arbys.schedule.json")).then((r) => r.json()),
+        fetch(dataUrl("/data/arbys.schedule.v2.json")).then((r) => r.json()),
         fetch(dataUrl("/data/arbys.nodes.zh.json")).then((r) => r.json()),
         fetch(dataUrl("/data/tierlist.default.json")).then((r) => r.json()),
       ]);
 
-      const scheduleArr = (s?.schedule ?? []) as ScheduleEntry[];
+      const scheduleArr = decodeSchedule(s as CompactScheduleFile);
       const nodes = n as NodesZhFile;
 
       const allNodeKeys = Object.keys(nodes.nodes ?? {});
@@ -187,8 +195,7 @@ export default function Home() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tierlist));
   }, [tierlist]);
 
-  const nodes = nodesFile?.nodes ?? {};
-  const allNodeKeys = useMemo(() => Object.keys(nodes), [nodes]);
+  const nodes = nodesFile?.nodes ?? EMPTY_NODES;
   const tierOfNode = useMemo(
     () => (tierlist ? buildTierOfNode(tierlist) : {}),
     [tierlist],
@@ -196,20 +203,23 @@ export default function Home() {
 
   const nodesArr = useMemo(() => Object.values(nodes), [nodes]);
 
-  const scheduleRange = useMemo(() => {
-    if (!schedule || schedule.length === 0) return { startIdx: 0, items: [] as ScheduleEntry[] };
-    const startIdx = findCurrentIndex(schedule, now);
-    const endIdx = Math.min(schedule.length, startIdx + rangeHours);
-    return { startIdx, items: schedule.slice(startIdx, endIdx) };
-  }, [schedule, now, rangeHours]);
+  // startIdx 是原始值：每小时才变一次，now 每 30s 跳动不会触发下游 memo 重算
+  const startIdx = useMemo(
+    () => (schedule && schedule.length > 0 ? findCurrentIndex(schedule, now) : 0),
+    [schedule, now],
+  );
+
+  const rangeItems = useMemo<ScheduleEntry[]>(() => {
+    if (!schedule || schedule.length === 0) return [];
+    return schedule.slice(startIdx, Math.min(schedule.length, startIdx + rangeHours));
+  }, [schedule, startIdx, rangeHours]);
 
   const current = useMemo(() => {
     if (!schedule || schedule.length === 0) return null;
-    const idx = findCurrentIndex(schedule, now);
-    const cur = schedule[idx]!;
-    const next = schedule[Math.min(idx + 1, schedule.length - 1)]!;
-    return { idx, cur, next };
-  }, [schedule, now]);
+    const cur = schedule[startIdx]!;
+    const next = schedule[Math.min(startIdx + 1, schedule.length - 1)]!;
+    return { idx: startIdx, cur, next };
+  }, [schedule, startIdx]);
 
   const planetAllOptions = useMemo(() => {
     const set = new Set<string>();
@@ -305,39 +315,70 @@ export default function Home() {
     return Array.from(set).sort((a, b) => a.localeCompare(b, "zh-CN"));
   }, [nodesArr, filterPlanet, filterMission]);
 
-  function isVisibleNode(nodeKey: string) {
-    const tier = tierOfNode[nodeKey] ?? "unrated";
-    if (selectedTiers[tier] === false) return false;
-    const n = nodes[nodeKey];
-    if (filterPlanet && n?.systemNameZh !== filterPlanet) return false;
-    if (filterMission && n?.missionNameZh !== filterMission) return false;
-    if (filterFaction && n?.factionNameZh !== filterFaction) return false;
-    if (searchTokens.length === 0) return true;
-    const text = (
-      n
-        ? [
-            n.missionNameZh,
-            n.factionNameZh,
-            n.nameZh,
-            n.systemNameZh,
-            nodeKey,
-            displayNode(n),
-          ].join(" ")
-        : nodeKey
-    ).toLowerCase();
-    // AND：每个 token 都必须命中
-    return searchTokens.every((tok) => text.includes(tok));
-  }
+  // 每个节点的搜索文本只拼一次（节点总数 < 100），不再在每行过滤时重复拼接
+  const searchTextOfNode = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const [k, n] of Object.entries(nodes)) {
+      m.set(
+        k,
+        [
+          n.missionNameZh,
+          n.factionNameZh,
+          n.nameZh,
+          n.systemNameZh,
+          k,
+          displayNode(n),
+        ]
+          .join(" ")
+          .toLowerCase(),
+      );
+    }
+    return m;
+  }, [nodes]);
+
+  // 可见性只取决于 nodeKey（与时间无关），按节点缓存：
+  // 过滤上万行 schedule 时实际只计算 <100 次
+  const isVisibleNode = useMemo(() => {
+    const cache = new Map<string, boolean>();
+    const compute = (nodeKey: string) => {
+      const tier = tierOfNode[nodeKey] ?? "unrated";
+      if (selectedTiers[tier] === false) return false;
+      const n = nodes[nodeKey];
+      if (filterPlanet && n?.systemNameZh !== filterPlanet) return false;
+      if (filterMission && n?.missionNameZh !== filterMission) return false;
+      if (filterFaction && n?.factionNameZh !== filterFaction) return false;
+      if (searchTokens.length === 0) return true;
+      const text = searchTextOfNode.get(nodeKey) ?? nodeKey.toLowerCase();
+      // AND：每个 token 都必须命中
+      return searchTokens.every((tok) => text.includes(tok));
+    };
+    return (nodeKey: string) => {
+      let v = cache.get(nodeKey);
+      if (v === undefined) {
+        v = compute(nodeKey);
+        cache.set(nodeKey, v);
+      }
+      return v;
+    };
+  }, [
+    nodes,
+    tierOfNode,
+    selectedTiers,
+    filterPlanet,
+    filterMission,
+    filterFaction,
+    searchTokens,
+    searchTextOfNode,
+  ]);
 
   type FlatItem =
     | { type: "day"; day: string; key: string }
     | { type: "row"; ts: number; nodeKey: string; key: string };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const flatItems = useMemo<FlatItem[]>(() => {
     let lastDay = "";
     const result: FlatItem[] = [];
-    for (const { ts, nodeKey } of scheduleRange.items) {
+    for (const { ts, nodeKey } of rangeItems) {
       if (!isVisibleNode(nodeKey)) continue;
       const day = dayLabel(ts);
       if (day !== lastDay) {
@@ -347,9 +388,7 @@ export default function Home() {
       result.push({ type: "row", ts, nodeKey, key: `${ts}-${nodeKey}` });
     }
     return result;
-  // isVisibleNode 不是稳定引用，intentionally 依赖完整 filter 状态
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scheduleRange.items, tierOfNode, selectedTiers, filterPlanet, filterMission, filterFaction, searchTokens]);
+  }, [rangeItems, isVisibleNode]);
 
   const virtualizer = useWindowVirtualizer({
     count: flatItems.length,
@@ -358,7 +397,7 @@ export default function Home() {
         ? (isMobile ? 44 : 52)
         : (isMobile ? 130 : 58),
     overscan: 12,
-    scrollMargin: scrollMargin.current,
+    scrollMargin: listScrollMargin,
   });
 
   function clearFilters() {
@@ -395,7 +434,7 @@ export default function Home() {
 
   function exportScheduleTxt() {
     const days = Math.round(rangeHours / 24);
-    const lines = scheduleRange.items
+    const lines = rangeItems
       .map(({ ts, nodeKey }) => {
         const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
         const tier = tierOfNode[nodeKey] ?? "unrated";
@@ -412,7 +451,7 @@ export default function Home() {
       schema: 1,
       rangeHours,
       exportedAt: new Date().toISOString(),
-      schedule: scheduleRange.items.map(({ ts, nodeKey }) => {
+      schedule: rangeItems.map(({ ts, nodeKey }) => {
         const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
         const tier = tierOfNode[nodeKey] ?? "unrated";
         return {
@@ -787,24 +826,24 @@ export default function Home() {
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <span>未来范围：</span>
-                  {scheduleRange.items.length > 0 ? (
+                  {rangeItems.length > 0 ? (
                     <>
                       <span className="font-mono text-slate-200">
-                        {dayLabel(scheduleRange.items[0]!.ts)}{" "}
-                        {hhmm(scheduleRange.items[0]!.ts)}
+                        {dayLabel(rangeItems[0]!.ts)}{" "}
+                        {hhmm(rangeItems[0]!.ts)}
                       </span>
                       <span className="text-slate-400">→</span>
                       <span className="font-mono text-slate-200">
                         {dayLabel(
-                          scheduleRange.items[scheduleRange.items.length - 1]!.ts,
+                          rangeItems[rangeItems.length - 1]!.ts,
                         )}{" "}
                         {hhmm(
-                          scheduleRange.items[scheduleRange.items.length - 1]!.ts,
+                          rangeItems[rangeItems.length - 1]!.ts,
                         )}
                       </span>
                       <span className="text-slate-400">
-                        （{scheduleRange.items.length} 条 /{" "}
-                        {Math.round(scheduleRange.items.length / 24)} 天）
+                        （{rangeItems.length} 条 /{" "}
+                        {Math.round(rangeItems.length / 24)} 天）
                       </span>
                     </>
                   ) : (

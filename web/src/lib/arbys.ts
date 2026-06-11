@@ -1,5 +1,23 @@
 export type ScheduleEntry = { ts: number; nodeKey: string };
 
+// v2 紧凑格式：整点等距，只存起始时间 + 节点字典 + 索引序列
+export type CompactScheduleFile = {
+  schema: number;
+  startTs: number;
+  stepSec: number;
+  nodes: string[];
+  seq: number[];
+};
+
+export function decodeSchedule(c: CompactScheduleFile): ScheduleEntry[] {
+  const { startTs, stepSec, nodes, seq } = c;
+  const out = new Array<ScheduleEntry>(seq.length);
+  for (let i = 0; i < seq.length; i++) {
+    out[i] = { ts: startTs + i * stepSec, nodeKey: nodes[seq[i]!]! };
+  }
+  return out;
+}
+
 export type NodeInfo = {
   nodeKey: string;
   missionNameZh: string;
