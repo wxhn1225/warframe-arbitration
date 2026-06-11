@@ -767,19 +767,14 @@ export default function Home() {
         {/* ======= 顶栏 ======= */}
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 via-indigo-500 to-violet-500 shadow-[0_6px_20px_rgba(99,102,241,0.4)]">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <rect
-                  x="12"
-                  y="2.8"
-                  width="13"
-                  height="13"
-                  rx="2"
-                  transform="rotate(45 12 2.8)"
-                  fill="#FFFFFF"
-                />
-              </svg>
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={dataUrl("/logo.png")}
+              alt="仲裁"
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-2xl object-cover ring-1 ring-white/40 shadow-[0_6px_20px_rgba(139,92,246,0.45)]"
+            />
             <div>
               <h1 className="text-[26px] font-extrabold leading-none tracking-tight text-white">
                 仲裁
