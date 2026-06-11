@@ -74,42 +74,41 @@ type TierStyle = {
   strip: string;
 };
 
-// 近白画布下的等级配色：S 用实心墨色（全页最强对比），
-// 其余用低饱和软色块，色彩只用于表达等级语义
+// 玻璃面板上的等级配色：实心彩色徽章 + 整行渐变着色，等级差异一眼可辨
 const TIER_STYLES: Record<string, TierStyle> = {
   S: {
-    chip: "bg-neutral-900 text-white",
-    bar: "border-l-neutral-900",
-    strip: "bg-neutral-900",
+    chip: "bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-[0_2px_10px_rgba(245,158,11,0.45)]",
+    bar: "border-l-amber-500 bg-gradient-to-r from-amber-200/95 via-amber-100/70 to-white/45",
+    strip: "bg-gradient-to-r from-amber-400 to-orange-500",
   },
   "A+": {
-    chip: "bg-rose-100 text-rose-700 ring-1 ring-inset ring-rose-200",
-    bar: "border-l-rose-400",
-    strip: "bg-rose-400",
+    chip: "bg-rose-500 text-white shadow-[0_2px_10px_rgba(244,63,94,0.35)]",
+    bar: "border-l-rose-500 bg-gradient-to-r from-rose-200/90 via-rose-100/60 to-white/45",
+    strip: "bg-rose-500",
   },
   A: {
-    chip: "bg-orange-100 text-orange-700 ring-1 ring-inset ring-orange-200",
-    bar: "border-l-orange-400",
-    strip: "bg-orange-400",
+    chip: "bg-orange-500 text-white shadow-[0_2px_10px_rgba(249,115,22,0.35)]",
+    bar: "border-l-orange-500 bg-gradient-to-r from-orange-200/90 via-orange-100/60 to-white/45",
+    strip: "bg-orange-500",
   },
   "A-": {
-    chip: "bg-yellow-100 text-yellow-700 ring-1 ring-inset ring-yellow-200",
-    bar: "border-l-yellow-400",
+    chip: "bg-yellow-400 text-yellow-950 shadow-[0_2px_10px_rgba(250,204,21,0.4)]",
+    bar: "border-l-yellow-400 bg-gradient-to-r from-yellow-200/90 via-yellow-100/60 to-white/45",
     strip: "bg-yellow-400",
   },
   B: {
-    chip: "bg-emerald-100 text-emerald-700 ring-1 ring-inset ring-emerald-200",
-    bar: "border-l-emerald-400",
-    strip: "bg-emerald-400",
+    chip: "bg-emerald-500 text-white shadow-[0_2px_10px_rgba(16,185,129,0.35)]",
+    bar: "border-l-emerald-500 bg-gradient-to-r from-emerald-200/85 via-emerald-100/55 to-white/45",
+    strip: "bg-emerald-500",
   },
   C: {
-    chip: "bg-sky-100 text-sky-700 ring-1 ring-inset ring-sky-200",
-    bar: "border-l-sky-400",
-    strip: "bg-sky-400",
+    chip: "bg-sky-500 text-white shadow-[0_2px_10px_rgba(14,165,233,0.35)]",
+    bar: "border-l-sky-500 bg-gradient-to-r from-sky-200/85 via-sky-100/55 to-white/45",
+    strip: "bg-sky-500",
   },
   unrated: {
-    chip: "bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200",
-    bar: "border-l-neutral-300",
+    chip: "bg-white/70 text-neutral-500 ring-1 ring-inset ring-neutral-200/80",
+    bar: "border-l-neutral-300 bg-white/40",
     strip: "bg-neutral-300",
   },
 };
@@ -156,9 +155,9 @@ function HourProgress({ startTs }: { startTs: number }) {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200/80">
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/60 shadow-[inset_0_1px_2px_rgba(38,56,105,0.12)]">
         <div
-          className="h-full rounded-full bg-neutral-900 transition-[width] duration-1000 ease-linear"
+          className="h-full rounded-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 shadow-[0_0_12px_rgba(99,102,241,0.5)] transition-[width] duration-1000 ease-linear"
           style={{ width: `${(clamped / 3600) * 100}%` }}
         />
       </div>
@@ -206,7 +205,7 @@ function SelectField({
       </div>
       <div className="relative">
         <select
-          className="w-full appearance-none rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 pr-10 text-neutral-800 outline-none transition hover:border-neutral-300 focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
+          className="w-full appearance-none rounded-xl border border-white/70 bg-white/55 px-3.5 py-2.5 pr-10 text-neutral-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-md outline-none transition hover:bg-white/75 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         >
@@ -237,10 +236,21 @@ function SelectField({
   );
 }
 
-const CARD =
-  "rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(28,25,23,0.04),0_16px_40px_-24px_rgba(28,25,23,0.12)]";
+const CARD = "glass rounded-3xl";
 const GHOST_BTN =
-  "rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-sm font-medium text-neutral-600 transition hover:border-neutral-300 hover:text-neutral-900 hover:shadow-sm";
+  "glass-inner rounded-xl px-3.5 py-2 text-sm font-medium text-neutral-700 transition hover:bg-white/80 hover:text-neutral-900 hover:shadow-md";
+
+/** 全页背景：浅色基底 + 缓慢漂浮的彩色光斑（液态玻璃的折射源） */
+function Backdrop() {
+  return (
+    <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden">
+      <div className="blob blob-1" />
+      <div className="blob blob-2" />
+      <div className="blob blob-3" />
+      <div className="blob blob-4" />
+    </div>
+  );
+}
 
 export default function Home() {
   const [schedule, setSchedule] = useState<ScheduleEntry[] | null>(null);
@@ -602,6 +612,7 @@ export default function Home() {
   if (!schedule || !nodesFile || !tierlist) {
     return (
       <div className="min-h-screen">
+        <Backdrop />
         <main className="mx-auto max-w-6xl space-y-6 px-5 py-10 md:px-8">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 animate-pulse rounded-xl bg-neutral-200/80" />
@@ -636,7 +647,7 @@ export default function Home() {
     tiers.some((t) => selectedTiers[t] === false);
 
   const viewSwitch = (
-    <div className="inline-flex shrink-0 rounded-lg bg-neutral-100 p-1">
+    <div className="glass-inner inline-flex shrink-0 rounded-xl p-1">
       {(
         [
           ["schedule", "仲裁时间"],
@@ -670,11 +681,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      <Backdrop />
       <main className="mx-auto max-w-6xl space-y-5 px-5 py-8 md:px-8 md:py-10">
         {/* ======= 顶栏 ======= */}
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-neutral-900 shadow-[0_2px_8px_rgba(28,25,23,0.25)]">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 via-indigo-500 to-violet-500 shadow-[0_6px_20px_rgba(99,102,241,0.4)]">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <rect
                   x="12"
@@ -689,7 +701,7 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-[26px] font-extrabold leading-none tracking-tight text-neutral-900">
-                仲裁时刻
+                仲裁
               </h1>
               <p className="mt-1.5 font-mono text-[11px] font-medium tracking-[0.24em] text-neutral-400">
                 WARFRAME ARBITRATION
@@ -765,7 +777,7 @@ export default function Home() {
             </div>
 
             {current ? (
-              <aside className="rounded-xl border border-neutral-200/80 bg-neutral-50/80 p-4 md:p-5">
+              <aside className="glass-inner rounded-2xl p-4 md:p-5">
                 <div className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-neutral-400">
                   Next · 下一场
                 </div>
@@ -794,14 +806,14 @@ export default function Home() {
                 <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
                   显示范围
                 </div>
-                <div className="inline-flex rounded-lg bg-neutral-100 p-1">
+                <div className="glass-inner inline-flex rounded-xl p-1">
                   {RANGE_OPTIONS.map(([hours, label]) => (
                     <button
                       key={hours}
                       className={[
-                        "rounded-md px-3 py-1.5 text-sm font-medium transition",
+                        "rounded-lg px-3 py-1.5 text-sm font-medium transition",
                         rangeHours === hours
-                          ? "bg-white font-semibold text-neutral-900 shadow-sm"
+                          ? "bg-neutral-900 font-semibold text-white shadow-md"
                           : "text-neutral-500 hover:text-neutral-900",
                       ].join(" ")}
                       onClick={() => setRangeHours(hours)}
@@ -830,7 +842,7 @@ export default function Home() {
                           "rounded-md px-2.5 py-1 text-xs font-bold tracking-wide transition",
                           active
                             ? tierStyle(tier).chip
-                            : "border border-dashed border-neutral-300 bg-white text-neutral-400 hover:border-neutral-400 hover:text-neutral-600",
+                            : "border border-dashed border-neutral-300 bg-white/40 text-neutral-400 hover:border-neutral-400 hover:text-neutral-600",
                         ].join(" ")}
                         title={active ? "点击隐藏该等级" : "点击显示该等级"}
                       >
@@ -844,10 +856,10 @@ export default function Home() {
 
             <button
               className={[
-                "shrink-0 rounded-lg px-3.5 py-2 text-sm font-medium transition",
+                "shrink-0 rounded-xl px-3.5 py-2 text-sm font-medium transition",
                 hasActiveFilter
-                  ? "border border-neutral-300 bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
-                  : "border border-neutral-200 bg-white text-neutral-400",
+                  ? "bg-neutral-900 text-white shadow-md hover:bg-neutral-700"
+                  : "glass-inner text-neutral-400",
               ].join(" ")}
               onClick={clearFilters}
               title="清空筛选与搜索"
@@ -899,7 +911,7 @@ export default function Home() {
                   />
                 </svg>
                 <input
-                  className="w-full rounded-lg border border-neutral-200 bg-white py-2.5 pl-10 pr-3.5 text-neutral-800 outline-none transition placeholder:text-neutral-400 hover:border-neutral-300 focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
+                  className="w-full rounded-xl border border-white/70 bg-white/55 py-2.5 pl-10 pr-3.5 text-neutral-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-md outline-none transition placeholder:text-neutral-400 hover:bg-white/75 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
                   placeholder="例如 地球拦截 或 地球 拦截"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -941,7 +953,7 @@ export default function Home() {
               </div>
 
               {flatItems.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-neutral-300 py-16 text-center text-neutral-400">
+                <div className="rounded-2xl border border-dashed border-white/80 bg-white/30 py-16 text-center text-neutral-400 backdrop-blur-sm">
                   没有符合当前筛选条件的仲裁
                 </div>
               ) : null}
@@ -969,8 +981,8 @@ export default function Home() {
                         }}
                       >
                         {item.type === "day" ? (
-                          <div className="mb-2 flex items-center gap-2 rounded-lg bg-neutral-100/80 px-3.5 py-2">
-                            <span className="inline-block h-1.5 w-1.5 rotate-45 bg-neutral-400" />
+                          <div className="glass-inner mb-2 flex items-center gap-2 rounded-xl px-3.5 py-2">
+                            <span className="inline-block h-1.5 w-1.5 rotate-45 bg-gradient-to-br from-sky-500 to-violet-500" />
                             <span className="text-sm font-bold tracking-wide text-neutral-800">
                               {item.day}
                             </span>
@@ -982,7 +994,7 @@ export default function Home() {
                           return (
                             <div
                               className={[
-                                "mb-2 rounded-xl border border-neutral-200/80 border-l-[3px] bg-white p-3.5 shadow-[0_1px_2px_rgba(28,25,23,0.04)]",
+                                "mb-2 rounded-xl border border-white/70 border-l-4 p-3.5 shadow-[0_2px_8px_rgba(38,56,105,0.06)] backdrop-blur-sm",
                                 tierStyle(tier).bar,
                               ].join(" ")}
                             >
@@ -1000,7 +1012,7 @@ export default function Home() {
                               </div>
                               <div className="mt-3">
                                 <select
-                                  className="w-full rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-700 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
+                                  className="w-full rounded-lg border border-white/70 bg-white/60 px-2.5 py-2 text-sm text-neutral-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
                                   value={tier}
                                   onChange={(e) => moveNode(nodeKey, e.target.value)}
                                 >
@@ -1022,8 +1034,8 @@ export default function Home() {
 
               {/* 桌面/平板：虚拟滚动表格 */}
               {!isMobile && flatItems.length > 0 && (
-                <div className="overflow-hidden rounded-xl border border-neutral-200/80">
-                  <div className="grid grid-cols-12 gap-2 border-b border-neutral-200 bg-neutral-50/80 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-neutral-400">
+                <div className="overflow-hidden rounded-2xl border border-white/70 bg-white/35 backdrop-blur-md">
+                  <div className="grid grid-cols-12 gap-2 border-b border-white/70 bg-white/50 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-neutral-400">
                     <div className="col-span-2">时间</div>
                     <div className="col-span-7">任务</div>
                     <div className="col-span-3">等级</div>
@@ -1049,12 +1061,12 @@ export default function Home() {
                           }}
                         >
                           {item.type === "day" ? (
-                            <div className="flex items-center gap-3 border-b border-neutral-200/80 bg-neutral-50 px-5 py-3">
-                              <span className="inline-block h-1.5 w-1.5 rotate-45 bg-neutral-400" />
+                            <div className="flex items-center gap-3 border-b border-white/60 bg-white/55 px-5 py-3 backdrop-blur-sm">
+                              <span className="inline-block h-1.5 w-1.5 rotate-45 bg-gradient-to-br from-sky-500 to-violet-500" />
                               <span className="text-sm font-bold tracking-wide text-neutral-800">
                                 {item.day}
                               </span>
-                              <div className="h-px flex-1 bg-neutral-200/70" />
+                              <div className="h-px flex-1 bg-neutral-300/50" />
                             </div>
                           ) : (() => {
                             const { ts, nodeKey } = item;
@@ -1063,7 +1075,7 @@ export default function Home() {
                             return (
                               <div
                                 className={[
-                                  "grid grid-cols-12 items-center gap-2 border-b border-neutral-100 border-l-[3px] bg-white px-5 py-3 transition-colors hover:bg-neutral-50",
+                                  "grid grid-cols-12 items-center gap-2 border-b border-white/50 border-l-4 px-5 py-3 transition hover:brightness-[0.96]",
                                   tierStyle(tier).bar,
                                 ].join(" ")}
                               >
@@ -1081,7 +1093,7 @@ export default function Home() {
                                 <div className="col-span-3 flex items-center gap-2.5">
                                   <TierChip tier={tier} />
                                   <select
-                                    className="rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-700 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
+                                    className="rounded-lg border border-white/80 bg-white/70 px-2 py-1.5 text-sm text-neutral-700 shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
                                     value={tier}
                                     onChange={(e) => moveNode(nodeKey, e.target.value)}
                                   >
@@ -1114,10 +1126,10 @@ export default function Home() {
                     return (
                       <div
                         key={tier}
-                        className="overflow-hidden rounded-xl border border-neutral-200/80 bg-white"
+                        className="overflow-hidden rounded-2xl border border-white/70 bg-white/40 backdrop-blur-md"
                       >
                         <div className={["h-1 w-full", tierStyle(tier).strip].join(" ")} />
-                        <div className="flex items-center justify-between border-b border-neutral-200/70 px-4 py-3">
+                        <div className="flex items-center justify-between border-b border-white/70 bg-white/40 px-4 py-3">
                           <div className="flex items-center gap-2.5">
                             <TierChip tier={tier} />
                             <span className="text-sm font-bold text-neutral-800">节点</span>
@@ -1139,7 +1151,7 @@ export default function Home() {
                                 <div
                                   key={nodeKey}
                                   className={[
-                                    "rounded-lg border border-neutral-200/80 border-l-[3px] bg-white p-3.5 transition-colors hover:bg-neutral-50",
+                                    "rounded-xl border border-white/70 border-l-4 p-3.5 shadow-[0_2px_8px_rgba(38,56,105,0.06)] transition hover:brightness-[0.97]",
                                     tierStyle(nodeTier).bar,
                                   ].join(" ")}
                                 >
@@ -1152,7 +1164,7 @@ export default function Home() {
                                   <div className="mt-3 flex flex-wrap items-center gap-2.5">
                                     <TierChip tier={nodeTier} />
                                     <select
-                                      className="rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-700 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
+                                      className="rounded-lg border border-white/80 bg-white/70 px-2 py-1.5 text-sm text-neutral-700 shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
                                       value={nodeTier}
                                       onChange={(e) => moveNode(nodeKey, e.target.value)}
                                     >

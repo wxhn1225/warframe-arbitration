@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#fafafa",
+  themeColor: "#edf1f7",
 };
 
 export default function RootLayout({
@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-[#fafafa] text-[#171717] antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-[#edf1f7] text-[#1c2230] antialiased`}
       >
         {children}
       </body>
