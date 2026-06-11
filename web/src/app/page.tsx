@@ -74,13 +74,13 @@ type TierStyle = {
   strip: string;
 };
 
-// 纸面亮色下的等级配色：S 用实心金色（全页唯一的强对比），
-// 其余用低饱和软色块，靠色相区分
+// 近白画布下的等级配色：S 用实心墨色（全页最强对比），
+// 其余用低饱和软色块，色彩只用于表达等级语义
 const TIER_STYLES: Record<string, TierStyle> = {
   S: {
-    chip: "bg-amber-500 text-white",
-    bar: "border-l-amber-500",
-    strip: "bg-amber-500",
+    chip: "bg-neutral-900 text-white",
+    bar: "border-l-neutral-900",
+    strip: "bg-neutral-900",
   },
   "A+": {
     chip: "bg-rose-100 text-rose-700 ring-1 ring-inset ring-rose-200",
@@ -108,9 +108,9 @@ const TIER_STYLES: Record<string, TierStyle> = {
     strip: "bg-sky-400",
   },
   unrated: {
-    chip: "bg-stone-100 text-stone-500 ring-1 ring-inset ring-stone-200",
-    bar: "border-l-stone-300",
-    strip: "bg-stone-300",
+    chip: "bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200",
+    bar: "border-l-neutral-300",
+    strip: "bg-neutral-300",
   },
 };
 
@@ -156,15 +156,15 @@ function HourProgress({ startTs }: { startTs: number }) {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-200/80">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200/80">
         <div
-          className="h-full rounded-full bg-amber-500 transition-[width] duration-1000 ease-linear"
+          className="h-full rounded-full bg-neutral-900 transition-[width] duration-1000 ease-linear"
           style={{ width: `${(clamped / 3600) * 100}%` }}
         />
       </div>
-      <div className="shrink-0 text-sm text-stone-500">
+      <div className="shrink-0 text-sm text-neutral-500">
         剩余{" "}
-        <span className="font-mono text-base font-semibold text-amber-700 tabular-nums">
+        <span className="font-mono text-base font-semibold text-neutral-900 tabular-nums">
           {mm}:{ss}
         </span>
       </div>
@@ -201,12 +201,12 @@ function SelectField({
 }) {
   return (
     <div className="space-y-1.5">
-      <div className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+      <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
         {label}
       </div>
       <div className="relative">
         <select
-          className="w-full appearance-none rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 pr-10 text-stone-800 outline-none transition hover:border-stone-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+          className="w-full appearance-none rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 pr-10 text-neutral-800 outline-none transition hover:border-neutral-300 focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         >
@@ -218,7 +218,7 @@ function SelectField({
           ))}
         </select>
         <svg
-          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
           width="14"
           height="14"
           viewBox="0 0 24 24"
@@ -238,9 +238,9 @@ function SelectField({
 }
 
 const CARD =
-  "rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(28,25,23,0.04),0_16px_40px_-24px_rgba(28,25,23,0.12)]";
+  "rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(28,25,23,0.04),0_16px_40px_-24px_rgba(28,25,23,0.12)]";
 const GHOST_BTN =
-  "rounded-lg border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-stone-600 transition hover:border-stone-300 hover:text-stone-900 hover:shadow-sm";
+  "rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-sm font-medium text-neutral-600 transition hover:border-neutral-300 hover:text-neutral-900 hover:shadow-sm";
 
 export default function Home() {
   const [schedule, setSchedule] = useState<ScheduleEntry[] | null>(null);
@@ -604,24 +604,24 @@ export default function Home() {
       <div className="min-h-screen">
         <main className="mx-auto max-w-6xl space-y-6 px-5 py-10 md:px-8">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 animate-pulse rounded-xl bg-stone-200/80" />
+            <div className="h-10 w-10 animate-pulse rounded-xl bg-neutral-200/80" />
             <div className="space-y-2">
-              <div className="h-5 w-48 animate-pulse rounded-md bg-stone-200/80" />
-              <div className="h-3 w-32 animate-pulse rounded-md bg-stone-200/60" />
+              <div className="h-5 w-48 animate-pulse rounded-md bg-neutral-200/80" />
+              <div className="h-3 w-32 animate-pulse rounded-md bg-neutral-200/60" />
             </div>
           </div>
-          <div className="h-44 animate-pulse rounded-2xl bg-stone-200/50" />
-          <div className="h-28 animate-pulse rounded-2xl bg-stone-200/50" />
+          <div className="h-44 animate-pulse rounded-2xl bg-neutral-200/50" />
+          <div className="h-28 animate-pulse rounded-2xl bg-neutral-200/50" />
           <div className="space-y-2">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="h-12 animate-pulse rounded-xl bg-stone-200/40"
+                className="h-12 animate-pulse rounded-xl bg-neutral-200/40"
                 style={{ animationDelay: `${i * 80}ms` }}
               />
             ))}
           </div>
-          <div className="text-sm text-stone-400">正在加载仲裁数据…</div>
+          <div className="text-sm text-neutral-400">正在加载仲裁数据…</div>
         </main>
       </div>
     );
@@ -636,7 +636,7 @@ export default function Home() {
     tiers.some((t) => selectedTiers[t] === false);
 
   const viewSwitch = (
-    <div className="inline-flex shrink-0 rounded-lg bg-stone-100 p-1">
+    <div className="inline-flex shrink-0 rounded-lg bg-neutral-100 p-1">
       {(
         [
           ["schedule", "仲裁时间"],
@@ -648,8 +648,8 @@ export default function Home() {
           className={[
             "rounded-md px-4 py-1.5 text-sm font-semibold transition",
             tab === key
-              ? "bg-stone-900 text-white shadow-sm"
-              : "text-stone-500 hover:text-stone-900",
+              ? "bg-neutral-900 text-white shadow-sm"
+              : "text-neutral-500 hover:text-neutral-900",
           ].join(" ")}
           onClick={() => setTab(key)}
         >
@@ -674,7 +674,7 @@ export default function Home() {
         {/* ======= 顶栏 ======= */}
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-stone-900 shadow-[0_2px_8px_rgba(28,25,23,0.25)]">
+            <div className="grid h-11 w-11 place-items-center rounded-xl bg-neutral-900 shadow-[0_2px_8px_rgba(28,25,23,0.25)]">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <rect
                   x="12"
@@ -683,15 +683,15 @@ export default function Home() {
                   height="13"
                   rx="2"
                   transform="rotate(45 12 2.8)"
-                  fill="#F59E0B"
+                  fill="#FFFFFF"
                 />
               </svg>
             </div>
             <div>
-              <h1 className="text-[26px] font-extrabold leading-none tracking-tight text-stone-900">
+              <h1 className="text-[26px] font-extrabold leading-none tracking-tight text-neutral-900">
                 仲裁时刻
               </h1>
-              <p className="mt-1.5 text-[11px] font-semibold tracking-[0.24em] text-stone-400">
+              <p className="mt-1.5 font-mono text-[11px] font-medium tracking-[0.24em] text-neutral-400">
                 WARFRAME ARBITRATION
               </p>
             </div>
@@ -733,30 +733,26 @@ export default function Home() {
 
         {/* ======= 当前仲裁 ======= */}
         <section className={`${CARD} overflow-hidden`}>
-          <div className="h-1 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-200" />
           <div className="grid gap-6 p-5 md:grid-cols-[1fr_280px] md:items-stretch md:p-7">
             <div className="min-w-0 flex flex-col">
               <div className="flex items-center gap-2.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-50" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
-                </span>
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">
-                  正在进行
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                  Live · 正在进行
                 </span>
                 {current ? <TierChip tier={currentTier} /> : null}
               </div>
 
               <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                <div className="font-mono text-5xl font-bold tabular-nums tracking-tight text-stone-900 md:text-6xl">
+                <div className="font-mono text-5xl font-bold tabular-nums tracking-tight text-neutral-900 md:text-6xl">
                   {current ? hhmm(current.cur.ts) : "—"}
                 </div>
-                <div className="min-w-0 truncate text-base font-semibold text-stone-700 md:text-xl">
+                <div className="min-w-0 truncate text-base font-semibold text-neutral-700 md:text-xl">
                   {currentNode ? displayNode(currentNode) : "—"}
                 </div>
               </div>
               {current ? (
-                <div className="mt-1 font-mono text-xs text-stone-400">
+                <div className="mt-1 font-mono text-xs text-neutral-400">
                   {current.cur.nodeKey}
                 </div>
               ) : null}
@@ -769,20 +765,20 @@ export default function Home() {
             </div>
 
             {current ? (
-              <aside className="rounded-xl border border-stone-200/80 bg-stone-50/80 p-4 md:p-5">
-                <div className="text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
-                  下一场
+              <aside className="rounded-xl border border-neutral-200/80 bg-neutral-50/80 p-4 md:p-5">
+                <div className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-neutral-400">
+                  Next · 下一场
                 </div>
                 <div className="mt-2.5 flex items-center gap-2.5">
-                  <span className="font-mono text-2xl font-semibold tabular-nums text-stone-900">
+                  <span className="font-mono text-2xl font-semibold tabular-nums text-neutral-900">
                     {hhmm(current.next.ts)}
                   </span>
                   <TierChip tier={nextTier} />
                 </div>
-                <div className="mt-1.5 text-sm leading-snug text-stone-600">
+                <div className="mt-1.5 text-sm leading-snug text-neutral-600">
                   {nextNode ? displayNode(nextNode) : "—"}
                 </div>
-                <div className="mt-1 font-mono text-xs text-stone-400">
+                <div className="mt-1 font-mono text-xs text-neutral-400">
                   {current.next.nodeKey}
                 </div>
               </aside>
@@ -795,18 +791,18 @@ export default function Home() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
               <div className="space-y-1.5">
-                <div className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+                <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
                   显示范围
                 </div>
-                <div className="inline-flex rounded-lg bg-stone-100 p-1">
+                <div className="inline-flex rounded-lg bg-neutral-100 p-1">
                   {RANGE_OPTIONS.map(([hours, label]) => (
                     <button
                       key={hours}
                       className={[
                         "rounded-md px-3 py-1.5 text-sm font-medium transition",
                         rangeHours === hours
-                          ? "bg-white font-semibold text-stone-900 shadow-sm"
-                          : "text-stone-500 hover:text-stone-900",
+                          ? "bg-white font-semibold text-neutral-900 shadow-sm"
+                          : "text-neutral-500 hover:text-neutral-900",
                       ].join(" ")}
                       onClick={() => setRangeHours(hours)}
                     >
@@ -817,7 +813,7 @@ export default function Home() {
               </div>
 
               <div className="space-y-1.5">
-                <div className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+                <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
                   筛选等级
                 </div>
                 <div className="flex flex-wrap gap-1.5 pt-0.5">
@@ -834,7 +830,7 @@ export default function Home() {
                           "rounded-md px-2.5 py-1 text-xs font-bold tracking-wide transition",
                           active
                             ? tierStyle(tier).chip
-                            : "border border-dashed border-stone-300 bg-white text-stone-400 hover:border-stone-400 hover:text-stone-600",
+                            : "border border-dashed border-neutral-300 bg-white text-neutral-400 hover:border-neutral-400 hover:text-neutral-600",
                         ].join(" ")}
                         title={active ? "点击隐藏该等级" : "点击显示该等级"}
                       >
@@ -850,8 +846,8 @@ export default function Home() {
               className={[
                 "shrink-0 rounded-lg px-3.5 py-2 text-sm font-medium transition",
                 hasActiveFilter
-                  ? "border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100"
-                  : "border border-stone-200 bg-white text-stone-400",
+                  ? "border border-neutral-300 bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
+                  : "border border-neutral-200 bg-white text-neutral-400",
               ].join(" ")}
               onClick={clearFilters}
               title="清空筛选与搜索"
@@ -883,12 +879,12 @@ export default function Home() {
               options={factionOptions}
             />
             <div className="space-y-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+              <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
                 关键词
               </div>
               <div className="relative">
                 <svg
-                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
                   width="15"
                   height="15"
                   viewBox="0 0 24 24"
@@ -903,13 +899,13 @@ export default function Home() {
                   />
                 </svg>
                 <input
-                  className="w-full rounded-lg border border-stone-200 bg-white py-2.5 pl-10 pr-3.5 text-stone-800 outline-none transition placeholder:text-stone-400 hover:border-stone-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                  className="w-full rounded-lg border border-neutral-200 bg-white py-2.5 pl-10 pr-3.5 text-neutral-800 outline-none transition placeholder:text-neutral-400 hover:border-neutral-300 focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
                   placeholder="例如 地球拦截 或 地球 拦截"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              <div className="text-xs text-stone-400">
+              <div className="text-xs text-neutral-400">
                 匹配星球 / 任务 / 派系 / 节点名 / Key
               </div>
             </div>
@@ -919,21 +915,21 @@ export default function Home() {
             <div className="space-y-3">
               <div
                 ref={scheduleTopRef}
-                className="flex flex-wrap items-center justify-between gap-3 text-sm text-stone-500"
+                className="flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-500"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <span>未来范围</span>
                   {rangeItems.length > 0 ? (
                     <>
-                      <span className="font-mono tabular-nums text-stone-700">
+                      <span className="font-mono tabular-nums text-neutral-700">
                         {dayLabel(rangeItems[0]!.ts)} {hhmm(rangeItems[0]!.ts)}
                       </span>
-                      <span className="text-stone-300">→</span>
-                      <span className="font-mono tabular-nums text-stone-700">
+                      <span className="text-neutral-300">→</span>
+                      <span className="font-mono tabular-nums text-neutral-700">
                         {dayLabel(rangeItems[rangeItems.length - 1]!.ts)}{" "}
                         {hhmm(rangeItems[rangeItems.length - 1]!.ts)}
                       </span>
-                      <span className="text-stone-400">
+                      <span className="text-neutral-400">
                         （{rangeItems.length} 条 / {Math.round(rangeItems.length / 24)} 天）
                       </span>
                     </>
@@ -945,7 +941,7 @@ export default function Home() {
               </div>
 
               {flatItems.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-stone-300 py-16 text-center text-stone-400">
+                <div className="rounded-xl border border-dashed border-neutral-300 py-16 text-center text-neutral-400">
                   没有符合当前筛选条件的仲裁
                 </div>
               ) : null}
@@ -973,9 +969,9 @@ export default function Home() {
                         }}
                       >
                         {item.type === "day" ? (
-                          <div className="mb-2 flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-50 to-transparent px-3.5 py-2">
-                            <span className="inline-block h-1.5 w-1.5 rotate-45 bg-amber-500" />
-                            <span className="text-sm font-bold tracking-wide text-stone-800">
+                          <div className="mb-2 flex items-center gap-2 rounded-lg bg-neutral-100/80 px-3.5 py-2">
+                            <span className="inline-block h-1.5 w-1.5 rotate-45 bg-neutral-400" />
+                            <span className="text-sm font-bold tracking-wide text-neutral-800">
                               {item.day}
                             </span>
                           </div>
@@ -986,25 +982,25 @@ export default function Home() {
                           return (
                             <div
                               className={[
-                                "mb-2 rounded-xl border border-stone-200/80 border-l-[3px] bg-white p-3.5 shadow-[0_1px_2px_rgba(28,25,23,0.04)]",
+                                "mb-2 rounded-xl border border-neutral-200/80 border-l-[3px] bg-white p-3.5 shadow-[0_1px_2px_rgba(28,25,23,0.04)]",
                                 tierStyle(tier).bar,
                               ].join(" ")}
                             >
                               <div className="flex items-start justify-between gap-2">
-                                <div className="font-mono text-base font-semibold tabular-nums text-stone-900">
+                                <div className="font-mono text-base font-semibold tabular-nums text-neutral-900">
                                   {hhmm(ts)}
                                 </div>
                                 <TierChip tier={tier} />
                               </div>
-                              <div className="mt-1.5 text-sm font-semibold text-stone-800">
+                              <div className="mt-1.5 text-sm font-semibold text-neutral-800">
                                 {displayNode(n)}
                               </div>
-                              <div className="mt-0.5 font-mono text-xs text-stone-400">
+                              <div className="mt-0.5 font-mono text-xs text-neutral-400">
                                 {nodeKey}
                               </div>
                               <div className="mt-3">
                                 <select
-                                  className="w-full rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-sm text-stone-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                                  className="w-full rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-700 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
                                   value={tier}
                                   onChange={(e) => moveNode(nodeKey, e.target.value)}
                                 >
@@ -1026,8 +1022,8 @@ export default function Home() {
 
               {/* 桌面/平板：虚拟滚动表格 */}
               {!isMobile && flatItems.length > 0 && (
-                <div className="overflow-hidden rounded-xl border border-stone-200/80">
-                  <div className="grid grid-cols-12 gap-2 border-b border-stone-200 bg-stone-50/80 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400">
+                <div className="overflow-hidden rounded-xl border border-neutral-200/80">
+                  <div className="grid grid-cols-12 gap-2 border-b border-neutral-200 bg-neutral-50/80 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-neutral-400">
                     <div className="col-span-2">时间</div>
                     <div className="col-span-7">任务</div>
                     <div className="col-span-3">等级</div>
@@ -1053,12 +1049,12 @@ export default function Home() {
                           }}
                         >
                           {item.type === "day" ? (
-                            <div className="flex items-center gap-3 border-b border-stone-200/80 bg-gradient-to-r from-amber-50 via-amber-50/40 to-white px-5 py-3">
-                              <span className="inline-block h-1.5 w-1.5 rotate-45 bg-amber-500" />
-                              <span className="text-sm font-bold tracking-wide text-stone-800">
+                            <div className="flex items-center gap-3 border-b border-neutral-200/80 bg-neutral-50 px-5 py-3">
+                              <span className="inline-block h-1.5 w-1.5 rotate-45 bg-neutral-400" />
+                              <span className="text-sm font-bold tracking-wide text-neutral-800">
                                 {item.day}
                               </span>
-                              <div className="h-px flex-1 bg-stone-200/70" />
+                              <div className="h-px flex-1 bg-neutral-200/70" />
                             </div>
                           ) : (() => {
                             const { ts, nodeKey } = item;
@@ -1067,25 +1063,25 @@ export default function Home() {
                             return (
                               <div
                                 className={[
-                                  "grid grid-cols-12 items-center gap-2 border-b border-stone-100 border-l-[3px] bg-white px-5 py-3 transition-colors hover:bg-amber-50/40",
+                                  "grid grid-cols-12 items-center gap-2 border-b border-neutral-100 border-l-[3px] bg-white px-5 py-3 transition-colors hover:bg-neutral-50",
                                   tierStyle(tier).bar,
                                 ].join(" ")}
                               >
-                                <div className="col-span-2 font-mono tabular-nums text-stone-700">
+                                <div className="col-span-2 font-mono tabular-nums text-neutral-700">
                                   {hhmm(ts)}
                                 </div>
                                 <div className="col-span-7 min-w-0">
-                                  <div className="truncate text-sm font-semibold text-stone-800">
+                                  <div className="truncate text-sm font-semibold text-neutral-800">
                                     {displayNode(n)}
                                   </div>
-                                  <div className="mt-0.5 font-mono text-xs text-stone-400">
+                                  <div className="mt-0.5 font-mono text-xs text-neutral-400">
                                     {nodeKey}
                                   </div>
                                 </div>
                                 <div className="col-span-3 flex items-center gap-2.5">
                                   <TierChip tier={tier} />
                                   <select
-                                    className="rounded-md border border-stone-200 bg-white px-2 py-1.5 text-sm text-stone-700 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                                    className="rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-700 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
                                     value={tier}
                                     onChange={(e) => moveNode(nodeKey, e.target.value)}
                                   >
@@ -1118,22 +1114,22 @@ export default function Home() {
                     return (
                       <div
                         key={tier}
-                        className="overflow-hidden rounded-xl border border-stone-200/80 bg-white"
+                        className="overflow-hidden rounded-xl border border-neutral-200/80 bg-white"
                       >
                         <div className={["h-1 w-full", tierStyle(tier).strip].join(" ")} />
-                        <div className="flex items-center justify-between border-b border-stone-200/70 px-4 py-3">
+                        <div className="flex items-center justify-between border-b border-neutral-200/70 px-4 py-3">
                           <div className="flex items-center gap-2.5">
                             <TierChip tier={tier} />
-                            <span className="text-sm font-bold text-stone-800">节点</span>
+                            <span className="text-sm font-bold text-neutral-800">节点</span>
                           </div>
-                          <div className="font-mono text-xs tabular-nums text-stone-400">
+                          <div className="font-mono text-xs tabular-nums text-neutral-400">
                             {visibleKeys.length}/{keys.length}
                           </div>
                         </div>
 
                         <div className="space-y-2 p-3">
                           {visibleKeys.length === 0 ? (
-                            <div className="px-1 py-2 text-sm text-stone-400">（空）</div>
+                            <div className="px-1 py-2 text-sm text-neutral-400">（空）</div>
                           ) : (
                             visibleKeys.map((nodeKey) => {
                               const n = nodes[nodeKey];
@@ -1143,20 +1139,20 @@ export default function Home() {
                                 <div
                                   key={nodeKey}
                                   className={[
-                                    "rounded-lg border border-stone-200/80 border-l-[3px] bg-white p-3.5 transition-colors hover:bg-amber-50/40",
+                                    "rounded-lg border border-neutral-200/80 border-l-[3px] bg-white p-3.5 transition-colors hover:bg-neutral-50",
                                     tierStyle(nodeTier).bar,
                                   ].join(" ")}
                                 >
-                                  <div className="text-sm font-semibold text-stone-800">
+                                  <div className="text-sm font-semibold text-neutral-800">
                                     {text}
                                   </div>
-                                  <div className="mt-1 font-mono text-xs text-stone-400">
+                                  <div className="mt-1 font-mono text-xs text-neutral-400">
                                     {nodeKey}
                                   </div>
                                   <div className="mt-3 flex flex-wrap items-center gap-2.5">
                                     <TierChip tier={nodeTier} />
                                     <select
-                                      className="rounded-md border border-stone-200 bg-white px-2 py-1.5 text-sm text-stone-700 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                                      className="rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-700 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300/60"
                                       value={nodeTier}
                                       onChange={(e) => moveNode(nodeKey, e.target.value)}
                                     >
@@ -1180,14 +1176,14 @@ export default function Home() {
           )}
         </section>
 
-        <footer className="pb-2 pt-1 text-center text-xs text-stone-400">
+        <footer className="pb-2 pt-1 text-center text-xs text-neutral-400">
           整点轮换 · 等级表保存在本地浏览器，可随时恢复默认
         </footer>
       </main>
 
       {showScrollTop && tab === "schedule" ? (
         <button
-          className="fixed bottom-6 right-6 flex h-11 w-11 items-center justify-center rounded-full bg-stone-900 text-amber-400 shadow-[0_8px_24px_rgba(28,25,23,0.3)] transition hover:scale-110 active:scale-95"
+          className="fixed bottom-6 right-6 flex h-11 w-11 items-center justify-center rounded-full bg-neutral-900 text-white shadow-[0_4px_16px_rgba(0,0,0,0.2)] transition hover:bg-neutral-700 active:scale-95"
           onClick={() =>
             scheduleTopRef.current?.scrollIntoView({ behavior: "smooth" })
           }
