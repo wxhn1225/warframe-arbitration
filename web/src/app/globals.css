@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #060a14;
-  --foreground: #e2e8f0;
-  /* 让系统控件保持可读（尤其是 Windows 的 select 下拉列表） */
+  /* 暖纸色亮色主题 */
+  --background: #f7f5f1;
+  --foreground: #1c1917;
   color-scheme: light;
 }
 
@@ -19,7 +19,9 @@ html {
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1200px 480px at 50% -120px, rgba(245, 158, 11, 0.07), transparent 70%),
+    var(--background);
   color: var(--foreground);
   font-family:
     var(--font-geist-sans),
@@ -32,11 +34,11 @@ body {
 }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.28);
-  color: #f8fafc;
+  background: rgba(245, 158, 11, 0.25);
+  color: #1c1917;
 }
 
-/* 自定义滚动条：贴合深色主题 */
+/* 浅色细滚动条 */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -45,27 +47,23 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.22);
+  background: rgba(120, 113, 108, 0.28);
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.38);
+  background: rgba(120, 113, 108, 0.45);
   background-clip: padding-box;
   border: 2px solid transparent;
 }
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+  scrollbar-color: rgba(120, 113, 108, 0.3) transparent;
 }
 
-/* 解决深色页面下，原生 select 下拉“选项文字看不见”（白底白字/浅字）的问题 */
-select {
-  color-scheme: light;
-}
 select option,
 select optgroup {
-  color: #0f172a;
+  color: #1c1917;
   background: #ffffff;
 }
