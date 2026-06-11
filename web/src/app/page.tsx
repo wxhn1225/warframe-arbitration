@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import {
   buildTierOfNode,
@@ -32,6 +39,20 @@ const RANGE_OPTIONS = [
 ] as const;
 
 type RangeHours = (typeof RANGE_OPTIONS)[number][0];
+
+// 用 useSyncExternalStore 订阅外部状态（媒体查询 / URL 参数），
+// 避免「effect 里同步 setState」导致的级联渲染，同时保证 SSR 水合安全
+const MOBILE_QUERY = "(max-width: 767px)";
+const subscribeMobile = (cb: () => void) => {
+  const mq = window.matchMedia(MOBILE_QUERY);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+};
+const getIsMobile = () => window.matchMedia(MOBILE_QUERY).matches;
+const subscribeNoop = () => () => {};
+const getIsDevMode = () =>
+  new URLSearchParams(window.location.search).get("dev") === "1";
+const getServerFalse = () => false;
 
 function fallbackNode(nodeKey: string): NodeInfo {
   return {
@@ -220,25 +241,12 @@ export default function Home() {
   const [filterMission, setFilterMission] = useState("");
   const [filterFaction, setFilterFaction] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isDevMode, setIsDevMode] = useState(false);
+  const isMobile = useSyncExternalStore(subscribeMobile, getIsMobile, getServerFalse);
+  const isDevMode = useSyncExternalStore(subscribeNoop, getIsDevMode, getServerFalse);
 
   const scheduleTopRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const [listScrollMargin, setListScrollMargin] = useState(0);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    setIsMobile(mq.matches);
-    const fn = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", fn);
-    return () => mq.removeEventListener("change", fn);
-  }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setIsDevMode(params.get("dev") === "1");
-  }, []);
 
   // 只在挂载/视图切换/窗口尺寸变化时测量列表顶部偏移，避免每次渲染都强制 reflow
   useLayoutEffect(() => {
