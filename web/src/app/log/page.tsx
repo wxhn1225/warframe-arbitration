@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toCanvas } from "html-to-image";
+import { getFontEmbedCSS, toCanvas } from "html-to-image";
 import type { MissionResult, ParseResult } from "@/lib/eelog/parser";
 import { parseEeLogInWorker } from "@/lib/eelog/parseInWorker";
 import { DetailOverlay } from "./components/DetailOverlay";
@@ -44,6 +44,10 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+// 截图的两块固定成本只算一次：字体嵌入 CSS（主线程大头）与背景图解码
+let shotFontCss: string | null = null;
+let shotBgPromise: Promise<HTMLImageElement> | null = null;
+
 /**
  * 在画布上铺出与页面一致的“玻璃背后”：
  * 背景图 cover 填满 + 模糊（等效 backdrop-filter）+ 暗角遮罩 + 面板玻璃底色。
@@ -53,7 +57,8 @@ async function paintGlassBackdrop(ctx: CanvasRenderingContext2D, w: number, h: n
   ctx.fillStyle = "#11131d";
   ctx.fillRect(0, 0, w, h);
   try {
-    const bg = await loadImage(`${BASE_PATH}/bg.jpg`);
+    shotBgPromise ??= loadImage(`${BASE_PATH}/bg.jpg`);
+    const bg = await shotBgPromise;
     const scale = Math.max(w / bg.naturalWidth, h / bg.naturalHeight);
     const dw = bg.naturalWidth * scale;
     const dh = bg.naturalHeight * scale;
@@ -61,7 +66,8 @@ async function paintGlassBackdrop(ctx: CanvasRenderingContext2D, w: number, h: n
     ctx.drawImage(bg, (w - dw) / 2, (h - dh) / 2, dw, dh);
     ctx.filter = "none";
   } catch {
-    // 背景图加载失败就保留纯底色
+    // 背景图加载失败就保留纯底色；清掉缓存的失败 promise，下次重试
+    shotBgPromise = null;
   }
   const vignette = ctx.createLinearGradient(0, 0, 0, h);
   vignette.addColorStop(0, "rgba(10, 12, 22, 0.5)");
@@ -229,8 +235,11 @@ export default function Page() {
       await document.fonts.ready;
       // 卡片透明出图（半透明玻璃保留 alpha），再合成到模拟页面背景的画布上
       const pr = 2;
+      // 字体嵌入是出图最贵的一步，只在首次截图时计算
+      shotFontCss ??= await getFontEmbedCSS(el);
       const shot = await toCanvas(el, {
         pixelRatio: pr,
+        fontEmbedCSS: shotFontCss,
         // 按钮等交互元素不进截图
         filter: (node) =>
           !(node instanceof HTMLElement && node.dataset.shotIgnore != null),
