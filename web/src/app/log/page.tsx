@@ -35,6 +35,14 @@ const EMPTY_HMS: ManualHms = { h: "", m: "", s: "" };
 
 const BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
 
+// File System Access API（Chrome/Edge）：按 id 持久记住上次使用的目录，
+// 用户第一次选过 EE.log 后，之后的选择框都直接停在 Warframe 日志目录
+type OpenFilePickerFn = (opts?: {
+  id?: string;
+  multiple?: boolean;
+  types?: { description?: string; accept: Record<string, string[]> }[];
+}) => Promise<Array<{ getFile: () => Promise<File> }>>;
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -395,7 +403,33 @@ export default function Page() {
             {visibleMissions.some((m) => m.status === "incomplete") ? (
               <span className="warnTag">incomplete</span>
             ) : null}
-            <label className="btn primary" htmlFor="file">
+            <label
+              className="btn primary"
+              htmlFor="file"
+              onClick={(e) => {
+                const picker = (window as { showOpenFilePicker?: OpenFilePickerFn })
+                  .showOpenFilePicker;
+                if (!picker) return; // 回退到原生 input
+                e.preventDefault();
+                void (async () => {
+                  try {
+                    const [handle] = await picker({
+                      id: "warframe-ee-log",
+                      multiple: false,
+                      types: [
+                        {
+                          description: "EE.log 日志",
+                          accept: { "text/plain": [".log", ".txt"] },
+                        },
+                      ],
+                    });
+                    if (handle) void handleFile(await handle.getFile());
+                  } catch {
+                    // 用户取消选择
+                  }
+                })();
+              }}
+            >
               上传
             </label>
             <label className="countPick">
