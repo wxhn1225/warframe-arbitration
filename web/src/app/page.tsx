@@ -76,10 +76,11 @@ type TierStyle = {
 
 // 玻璃面板上的等级配色：实心彩色徽章 + 整行渐变着色，等级差异一眼可辨
 const TIER_STYLES: Record<string, TierStyle> = {
+  // S 用紫红渐变，和 A 系暖色彻底拉开；A+/A/A- 形成 红->橙->黄 的强度阶梯
   S: {
-    chip: "bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-[0_2px_12px_rgba(245,158,11,0.55)]",
-    bar: "border-l-amber-400 bg-gradient-to-r from-amber-400/35 via-amber-400/15 to-transparent",
-    strip: "bg-gradient-to-r from-amber-400 to-orange-500",
+    chip: "bg-gradient-to-br from-fuchsia-500 to-violet-600 text-white shadow-[0_2px_12px_rgba(192,38,211,0.6)]",
+    bar: "border-l-fuchsia-400 bg-gradient-to-r from-fuchsia-500/35 via-violet-500/15 to-transparent",
+    strip: "bg-gradient-to-r from-fuchsia-500 to-violet-600",
   },
   "A+": {
     chip: "bg-rose-500 text-white shadow-[0_2px_12px_rgba(244,63,94,0.5)]",
@@ -175,7 +176,7 @@ function TierChip({ tier, className = "" }: { tier: string; className?: string }
   return (
     <span
       className={[
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold tracking-wide",
+        "inline-flex h-6 min-w-9 items-center justify-center rounded-md px-1.5 text-xs font-black tracking-wide",
         tierStyle(tier).chip,
         className,
       ].join(" ")}
@@ -185,7 +186,8 @@ function TierChip({ tier, className = "" }: { tier: string; className?: string }
   );
 }
 
-function SelectField({
+/** 自绘玻璃下拉：替代原生 select，弹出列表也走玻璃风格 */
+function GlassSelect({
   label,
   value,
   onChange,
@@ -198,39 +200,108 @@ function SelectField({
   placeholder: string;
   options: string[];
 }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const items = ["", ...options];
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5" ref={rootRef}>
       <div className="text-xs font-semibold uppercase tracking-wider text-white/55">
         {label}
       </div>
       <div className="relative">
-        <select
-          className="w-full appearance-none rounded-xl border border-white/25 bg-white/10 px-3.5 py-2.5 pr-10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md outline-none transition hover:bg-white/15 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+          className={[
+            "flex w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md outline-none transition",
+            open
+              ? "border-sky-400 bg-white/15 ring-2 ring-sky-300/50"
+              : "border-white/25 bg-white/10 hover:bg-white/15",
+          ].join(" ")}
         >
-          <option value="">{placeholder}</option>
-          {options.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </select>
-        <svg
-          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/55"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <path
-            d="M6 9l6 6 6-6"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+          <span className={["truncate", value ? "text-white" : "text-white/45"].join(" ")}>
+            {value || placeholder}
+          </span>
+          <svg
+            className={[
+              "shrink-0 text-white/55 transition-transform",
+              open ? "rotate-180" : "",
+            ].join(" ")}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path
+              d="M6 9l6 6 6-6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        {open ? (
+          <div
+            role="listbox"
+            className="glass-menu absolute left-0 right-0 z-30 mt-2 max-h-64 overflow-auto rounded-xl p-1"
+          >
+            {items.map((opt) => {
+              const selected = (value || "") === opt;
+              return (
+                <button
+                  key={opt || "__all"}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  onClick={() => {
+                    onChange(opt);
+                    setOpen(false);
+                  }}
+                  className={[
+                    "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition",
+                    selected
+                      ? "bg-white/20 font-semibold text-white"
+                      : "text-white/75 hover:bg-white/10 hover:text-white",
+                  ].join(" ")}
+                >
+                  <span className="truncate">{opt || placeholder}</span>
+                  {selected ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M5 12l5 5L20 7"
+                        stroke="currentColor"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -904,7 +975,7 @@ export default function Home() {
                 <div className="text-xs font-semibold uppercase tracking-wider text-white/55">
                   筛选等级
                 </div>
-                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <div className="glass-inner inline-flex flex-wrap items-center gap-1 rounded-xl p-1">
                   {tiers.map((tier) => {
                     const active = selectedTiers[tier] !== false;
                     return (
@@ -915,10 +986,10 @@ export default function Home() {
                           setSelectedTiers((m) => ({ ...m, [tier]: !active }))
                         }
                         className={[
-                          "rounded-md px-2.5 py-1 text-xs font-bold tracking-wide transition",
+                          "h-8 min-w-10 rounded-lg px-2.5 text-xs font-black tracking-wide transition",
                           active
                             ? tierStyle(tier).chip
-                            : "border border-dashed border-white/30 bg-white/5 text-white/55 hover:border-white/50 hover:text-white/80",
+                            : "text-white/40 hover:bg-white/10 hover:text-white/80",
                         ].join(" ")}
                         title={active ? "点击隐藏该等级" : "点击显示该等级"}
                       >
@@ -926,6 +997,29 @@ export default function Home() {
                       </button>
                     );
                   })}
+                  <span className="mx-1 h-5 w-px bg-white/20" />
+                  <button
+                    className="h-8 rounded-lg px-2.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+                    onClick={() => {
+                      const next: Record<string, boolean> = {};
+                      for (const t of tiers) next[t] = t === "S" || t === "A+" || t === "A";
+                      setSelectedTiers(next);
+                    }}
+                    title="只显示 S / A+ / A"
+                  >
+                    只看高价值
+                  </button>
+                  <button
+                    className="h-8 rounded-lg px-2.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+                    onClick={() => {
+                      const next: Record<string, boolean> = {};
+                      for (const t of tiers) next[t] = true;
+                      setSelectedTiers(next);
+                    }}
+                    title="显示全部等级"
+                  >
+                    全部
+                  </button>
                 </div>
               </div>
             </div>
@@ -945,21 +1039,21 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
-            <SelectField
+            <GlassSelect
               label="星球"
               value={filterPlanet}
               onChange={setFilterPlanet}
               placeholder="全部星球"
               options={planetOptions}
             />
-            <SelectField
+            <GlassSelect
               label="任务类型"
               value={filterMission}
               onChange={setFilterMission}
               placeholder="全部任务类型"
               options={missionOptions}
             />
-            <SelectField
+            <GlassSelect
               label="派系"
               value={filterFaction}
               onChange={setFilterFaction}
@@ -972,7 +1066,7 @@ export default function Home() {
               </div>
               <div className="relative">
                 <svg
-                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/55"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/70"
                   width="15"
                   height="15"
                   viewBox="0 0 24 24"
@@ -987,7 +1081,7 @@ export default function Home() {
                   />
                 </svg>
                 <input
-                  className="w-full rounded-xl border border-white/25 bg-white/10 py-2.5 pl-10 pr-3.5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md outline-none transition placeholder:text-white/40 hover:bg-white/15 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
+                  className="w-full rounded-xl border border-white/25 bg-white/10 py-2.5 pl-9 pr-3.5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md outline-none transition placeholder:text-white/40 hover:bg-white/15 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
                   placeholder="例如 地球拦截 或 地球 拦截"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
