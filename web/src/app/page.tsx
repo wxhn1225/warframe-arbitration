@@ -87,10 +87,11 @@ const TIER_STYLES: Record<string, TierStyle> = {
     bar: "border-l-rose-400 bg-gradient-to-r from-rose-500/30 via-rose-500/12 to-transparent",
     strip: "bg-gradient-to-r from-rose-500 to-red-600",
   },
+  // A 用「薄荷翡翠」渐变绿：亮翡翠 -> 青碧，在暗玻璃上通透发光
   A: {
-    chip: "bg-emerald-500 text-white shadow-[0_2px_12px_rgba(16,185,129,0.5)]",
-    bar: "border-l-emerald-400 bg-gradient-to-r from-emerald-500/28 via-emerald-500/12 to-transparent",
-    strip: "bg-emerald-500",
+    chip: "bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-[0_2px_12px_rgba(45,212,191,0.55)]",
+    bar: "border-l-emerald-300 bg-gradient-to-r from-emerald-400/30 via-teal-500/12 to-transparent",
+    strip: "bg-gradient-to-r from-emerald-400 to-teal-500",
   },
   "A-": {
     chip: "bg-gradient-to-br from-sky-400 to-blue-500 text-white shadow-[0_2px_12px_rgba(56,189,248,0.5)]",
