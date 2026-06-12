@@ -61,124 +61,31 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* ===== 液态金属入口按钮（日志分析） ===== */
-@property --lm-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-.lm-btn {
-  position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border-radius: 1rem;
-  padding: 12px 30px;
-  border: 1.5px solid transparent;
-  /* 深色内底 + 旋转的铬色渐变描边 */
-  background:
-    linear-gradient(155deg, rgba(22, 24, 38, 0.94), rgba(12, 14, 26, 0.9)) padding-box,
-    conic-gradient(
-      from var(--lm-angle, 0deg),
-      #565b6b,
-      #d7dbe4,
-      #ffffff,
-      #8b93a5,
-      #c4b5fd,
-      #f0f3f8,
-      #565b6b
-    ) border-box;
-  overflow: hidden;
-  animation:
-    lm-rotate 4.5s linear infinite,
-    lm-glow 2.8s ease-in-out infinite;
-  transition: transform 0.18s ease;
-}
-.lm-btn:hover {
-  transform: translateY(-1px) scale(1.04);
-}
-@keyframes lm-rotate {
-  to {
-    --lm-angle: 360deg;
-  }
-}
-@keyframes lm-glow {
-  0%,
-  100% {
-    box-shadow:
-      0 0 14px rgba(196, 181, 253, 0.25),
-      0 4px 18px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    box-shadow:
-      0 0 28px rgba(196, 181, 253, 0.55),
-      0 4px 18px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  }
-}
-
-/* 周期性扫过的镜面高光 */
-.lm-btn::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    115deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.4) 48%,
-    rgba(255, 255, 255, 0.08) 52%,
-    transparent 70%
-  );
-  transform: translateX(-160%);
-  animation: lm-sweep 3.6s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes lm-sweep {
-  0%,
-  55% {
-    transform: translateX(-160%);
-  }
-  85%,
-  100% {
-    transform: translateX(170%);
-  }
-}
-
-/* 液态铬文字：流动的金属渐变填充 */
-.lm-text {
-  font-size: 1.45rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
+/* ===== 品牌铬字：静态液态金属渐变 + 缓慢光泽流动 ===== */
+.chrome-word {
   background: linear-gradient(
     100deg,
     #aab3c2 0%,
-    #ffffff 16%,
-    #6e7990 30%,
-    #f8fafc 45%,
-    #8e99ad 58%,
-    #ffffff 74%,
+    #ffffff 18%,
+    #79849b 34%,
+    #f8fafc 50%,
+    #8e99ad 64%,
+    #ffffff 82%,
     #aab3c2 100%
   );
-  background-size: 240% 100%;
+  background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: lm-flow 3s linear infinite;
-  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.55));
+  animation: chrome-flow 7s linear infinite;
 }
-@keyframes lm-flow {
+@keyframes chrome-flow {
   to {
-    background-position: -240% 0;
+    background-position: -220% 0;
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .lm-btn,
-  .lm-btn::after,
-  .lm-text {
+  .chrome-word {
     animation: none;
   }
 }
@@ -255,7 +162,7 @@ body {
   );
   mix-blend-mode: screen;
   pointer-events: none;
-  z-index: 15;
+  z-index: 40;
   transition: opacity 0.4s ease;
   will-change: transform;
 }

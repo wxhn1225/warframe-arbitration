@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Backdrop, PointerEffects, SiteNav } from "./components/SiteChrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[#11131d] text-[#f3f5fa] antialiased`}
       >
+        <Backdrop />
+        <PointerEffects />
+        <SiteNav />
         {children}
       </body>
     </html>

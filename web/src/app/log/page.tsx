@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import html2canvas from "html2canvas";
 import type { MissionResult, ParseResult } from "@/lib/eelog/parser";
 import { parseEeLogInWorker } from "@/lib/eelog/parseInWorker";
@@ -15,10 +14,6 @@ import {
   type ManualHms,
   type TimeMode,
 } from "./lib/metrics";
-
-type Theme = "b" | "c" | "e";
-const THEME_LABELS: Record<Theme, string> = { b: "深海蓝", c: "暖雾暗", e: "暖奶油" };
-const THEME_STORAGE_KEY = "arb-theme";
 
 type NodeMeta = {
   nodeId: string;
@@ -47,24 +42,6 @@ export default function Page() {
   const [satPctMode, setSatPctMode] = useState<"total" | "active">("active");
   const [detailState, setDetailState] = useState<{ m: MissionResult; idx: number } | null>(null);
 
-  // ── theme ──
-  const [theme, setThemeState] = useState<Theme>("e");
-  const [showThemeMenu, setShowThemeMenu] = useState(false);
-
-  // load from localStorage on mount
-  // 主题通过 data-theme 挂在 .arb-log 包装层上（样式已作用域化，不污染队列页）
-  useEffect(() => {
-    const saved = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
-    if (saved && (saved === "b" || saved === "c" || saved === "e")) {
-      setThemeState(saved);
-    }
-  }, []);
-
-  const applyTheme = (t: Theme) => {
-    setThemeState(t);
-    setShowThemeMenu(false);
-    localStorage.setItem(THEME_STORAGE_KEY, t);
-  };
   const [isDragOver, setIsDragOver] = useState(false);
   const [parse, setParse] = useState<ParseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -195,11 +172,9 @@ export default function Page() {
       // 等待一帧让 React 重渲染（下拉框 → 纯文字）
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       await document.fonts.ready;
-      // pick background color matching current theme
-      const bgColor =
-        theme === "b" ? "#0d1c30" : theme === "c" ? "#18140f" : "#fffefb";
+      // 玻璃卡片是半透明的，截图垫一层站点底色保证可读
       const canvas = await html2canvas(el, {
-        backgroundColor: bgColor,
+        backgroundColor: "#11131d",
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -233,7 +208,7 @@ export default function Page() {
     } finally {
       setTimeout(() => setCopyingIdx(null), 1600);
     }
-  }, [theme]);
+  }, []);
 
   // ── RunCard 稳定回调（配合 React.memo 避免整列表重渲染）──
   const handleTimeModeChange = useCallback((idx: number, mode: TimeMode) => {
@@ -262,43 +237,8 @@ export default function Page() {
   }, [captureRun]);
 
   return (
-    <div className="arb-log" data-theme={theme === "e" ? undefined : theme}>
+    <div className="arb-log">
     <div className="wrap">
-      <header className="siteHeader">
-        <span className="siteTitle">日志分析</span>
-        <nav className="siteNav">
-          <Link href="/" className="btn ghost">
-            仲裁队列
-          </Link>
-        </nav>
-        <div className="themeSwitch">
-          <button
-            className="themeSwitchBtn"
-            onClick={() => setShowThemeMenu((v) => !v)}
-          >
-            <span className={`themeDot tp-${theme}`} />
-            {THEME_LABELS[theme]}
-            <span className="themeSwitchArrow">▾</span>
-          </button>
-          {showThemeMenu && (
-            <>
-              <div className="themeBackdrop" onClick={() => setShowThemeMenu(false)} />
-              <div className="themeMenu">
-                {(["b", "c", "e"] as Theme[]).map((t) => (
-                  <button
-                    key={t}
-                    className={`themeOption${theme === t ? " active" : ""}`}
-                    onClick={() => applyTheme(t)}
-                  >
-                    <span className={`themeDot tp-${t}`} />
-                    {THEME_LABELS[t]}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </header>
       <div
         className={`panel dropzone ${isDragOver ? "dragover" : ""}`}
         onDragOver={(e) => {

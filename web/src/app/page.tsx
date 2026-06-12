@@ -8,7 +8,6 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import Link from "next/link";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import {
   buildTierOfNode,
@@ -315,180 +314,6 @@ function GlassSelect({
 const CARD = "glass rounded-3xl";
 const GHOST_BTN =
   "glass-inner rounded-xl px-3.5 py-2 text-sm font-medium text-white/80 transition hover:bg-white/20 hover:text-white hover:shadow-md";
-
-/**
- * 日志分析入口：液态金属按钮。
- * 悬停时用 SVG feTurbulence + feDisplacementMap 让铬字真正"流动变形"
- * （参考 Shopify Editions 的液态金属效果），离开后回弹复原。
- */
-function LiquidMetalLink() {
-  const turbRef = useRef<SVGFETurbulenceElement | null>(null);
-  const dispRef = useRef<SVGFEDisplacementMapElement | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const scaleRef = useRef(0);
-  const targetRef = useRef(0);
-  const phaseRef = useRef(0);
-
-  const tick = () => {
-    // 位移幅度向目标值缓动，湍流相位持续漂移 → 金属液面流动感
-    scaleRef.current += (targetRef.current - scaleRef.current) * 0.1;
-    phaseRef.current += 0.045;
-    const s = scaleRef.current;
-    if (dispRef.current) dispRef.current.setAttribute("scale", s.toFixed(2));
-    if (turbRef.current) {
-      const fx = 0.011 + Math.sin(phaseRef.current) * 0.005;
-      const fy = 0.024 + Math.cos(phaseRef.current * 0.8) * 0.007;
-      turbRef.current.setAttribute("baseFrequency", `${fx.toFixed(4)} ${fy.toFixed(4)}`);
-    }
-    if (s > 0.08 || targetRef.current > 0) {
-      rafRef.current = requestAnimationFrame(tick);
-    } else {
-      if (dispRef.current) dispRef.current.setAttribute("scale", "0");
-      rafRef.current = null;
-    }
-  };
-  const start = () => {
-    targetRef.current = 16;
-    if (rafRef.current == null) rafRef.current = requestAnimationFrame(tick);
-  };
-  const stop = () => {
-    targetRef.current = 0;
-  };
-  useEffect(() => {
-    return () => {
-      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  return (
-    <Link
-      href="/log"
-      className="lm-btn"
-      title="上传 EE.log 分析仲裁记录"
-      onPointerEnter={start}
-      onPointerLeave={stop}
-    >
-      <svg aria-hidden width="0" height="0" style={{ position: "absolute" }}>
-        <filter id="lm-liquid" x="-40%" y="-40%" width="180%" height="180%">
-          <feTurbulence
-            ref={turbRef}
-            type="fractalNoise"
-            baseFrequency="0.011 0.024"
-            numOctaves="2"
-            seed="3"
-            result="noise"
-          />
-          <feDisplacementMap
-            ref={dispRef}
-            in="SourceGraphic"
-            in2="noise"
-            scale="0"
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-      </svg>
-      <span
-        className="lm-text"
-        style={{ filter: "url(#lm-liquid) drop-shadow(0 1px 1.5px rgba(0,0,0,0.55))" }}
-      >
-        日志分析
-      </span>
-    </Link>
-  );
-}
-
-/**
- * 全页背景：二次元画面 + 轻微暗角，玻璃卡片的折射源。
- * 注意：不能用负 z-index——body 自身的不透明背景会把它盖住，
- * 这里用 z-0，内容区用 relative z-10 叠在上面。
- */
-function Backdrop() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#11131d]"
-    >
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${dataUrl("/bg.jpg")})` }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0c16]/50 via-[#0a0c16]/25 to-[#0a0c16]/65" />
-    </div>
-  );
-}
-
-/**
- * 指针特效：
- * 1. 一团柔光跟随鼠标（缓动追踪，screen 混合 -> 像光透过玻璃折射）
- * 2. 点击/触摸处泛起双圈水波纹
- * 全部用 ref 直接操作 DOM + transform，不触发 React 重渲染。
- */
-function PointerEffects() {
-  const spotRef = useRef<HTMLDivElement | null>(null);
-  const hostRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const spot = spotRef.current;
-    const host = hostRef.current;
-    if (!spot || !host) return;
-
-    let tx = window.innerWidth / 2;
-    let ty = window.innerHeight / 3;
-    let cx = tx;
-    let cy = ty;
-    let raf = 0;
-
-    const tick = () => {
-      cx += (tx - cx) * 0.1;
-      cy += (ty - cy) * 0.1;
-      spot.style.transform = `translate3d(${cx - 320}px, ${cy - 320}px, 0)`;
-      if (Math.abs(tx - cx) + Math.abs(ty - cy) > 0.5) {
-        raf = requestAnimationFrame(tick);
-      } else {
-        raf = 0;
-      }
-    };
-
-    const onMove = (e: PointerEvent) => {
-      tx = e.clientX;
-      ty = e.clientY;
-      spot.style.opacity = "1";
-      if (!raf) raf = requestAnimationFrame(tick);
-    };
-
-    const onDown = (e: PointerEvent) => {
-      for (let i = 0; i < 2; i++) {
-        const ring = document.createElement("span");
-        ring.className = "ripple";
-        ring.style.left = `${e.clientX}px`;
-        ring.style.top = `${e.clientY}px`;
-        ring.style.animationDelay = `${i * 140}ms`;
-        ring.addEventListener("animationend", () => ring.remove());
-        host.appendChild(ring);
-      }
-    };
-
-    window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("pointerdown", onDown, { passive: true });
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerdown", onDown);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  return (
-    <>
-      <div ref={spotRef} aria-hidden className="spotlight opacity-0" />
-      <div
-        ref={hostRef}
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-20 overflow-hidden"
-      />
-    </>
-  );
-}
 
 export default function Home() {
   const [schedule, setSchedule] = useState<ScheduleEntry[] | null>(null);
@@ -850,8 +675,7 @@ export default function Home() {
   if (!schedule || !nodesFile || !tierlist) {
     return (
       <div className="min-h-screen">
-        <Backdrop />
-        <main className="relative z-10 mx-auto max-w-6xl space-y-6 px-5 py-10 md:px-8">
+        <main className="relative z-10 mx-auto max-w-6xl space-y-6 px-5 py-8 md:px-8">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 animate-pulse rounded-xl bg-white/15" />
             <div className="space-y-2">
@@ -919,32 +743,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <Backdrop />
-      <PointerEffects />
-      <main className="relative z-10 mx-auto max-w-6xl space-y-5 px-5 py-8 md:px-8 md:py-10">
-        {/* ======= 顶栏 ======= */}
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3.5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={dataUrl("/logo.png")}
-              alt="仲裁"
-              width={44}
-              height={44}
-              className="h-11 w-11 rounded-2xl object-cover ring-1 ring-white/40 shadow-[0_6px_20px_rgba(139,92,246,0.45)]"
-            />
-            <div>
-              <h1 className="text-[26px] font-extrabold leading-none tracking-tight text-white">
-                仲裁
-              </h1>
-              <p className="mt-1.5 font-mono text-[11px] font-medium tracking-[0.24em] text-white/55">
-                WARFRAME ARBITRATION
-              </p>
-            </div>
-          </div>
+      <main className="relative z-10 mx-auto max-w-6xl space-y-5 px-5 py-6 md:px-8 md:py-8">
+        {/* ======= 顶栏：页面操作 ======= */}
+        <header className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-xl font-extrabold tracking-tight text-white">
+            仲裁队列
+          </h1>
 
           <div className="flex flex-wrap gap-2">
-            <LiquidMetalLink />
             <button
               className={GHOST_BTN}
               onClick={exportScheduleTxt}
