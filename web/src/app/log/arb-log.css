@@ -90,8 +90,9 @@
   border-radius: 28px;
   padding: 22px;
   box-shadow: var(--card-shadow);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
-  backdrop-filter: blur(26px) saturate(150%);
+  /* 面板很高，模糊半径直接决定滚动时的重滤镜成本，18px 与 26px 视觉几乎无差 */
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
   transition: background 0.35s, border-color 0.35s;
 }
 .arb-log .panel.dropzone.dragover {

@@ -11,8 +11,11 @@ type ScanWorkerResponse =
   | { type: "done"; linesText: string; bytes: number }
   | { type: "error"; message: string };
 
-// 超过该大小启用并行扫描路径（多 Worker 提取标记行 + 单 Worker 回放状态机）
-const PARALLEL_MIN_SIZE = 256 * 1024 * 1024;
+// 超过该大小启用并行扫描路径（多 Worker 提取标记行 + 单 Worker 回放状态机）。
+// 实测真实日志（~100MB）扫描+回放比经典逐行解析快约 3 倍，阈值压低让常见文件也吃到加速
+const PARALLEL_MIN_SIZE = 16 * 1024 * 1024;
+// 每个扫描 Worker 至少负责的字节数：文件不大时少开几个，避免空转开销
+const MIN_SEG_PER_WORKER = 8 * 1024 * 1024;
 
 function runParserWorker(
   req: { file?: File; linesText?: string; options?: ParseRecentValidFromFileOptions },
@@ -75,7 +78,8 @@ async function parseParallel(
   onProgress?: (progress01: number) => void
 ): Promise<ParseResult> {
   const cores = typeof navigator !== "undefined" ? navigator.hardwareConcurrency || 4 : 4;
-  const workers = Math.min(Math.max(cores - 1, 2), 6);
+  const maxWorkers = Math.min(Math.max(cores - 1, 2), 6);
+  const workers = Math.max(1, Math.min(maxWorkers, Math.floor(file.size / MIN_SEG_PER_WORKER)));
   const segSize = Math.ceil(file.size / workers);
 
   // 扫描占进度的 0~0.95，回放占 0.95~1

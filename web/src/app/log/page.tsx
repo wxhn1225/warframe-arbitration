@@ -153,7 +153,11 @@ export default function Page() {
           chunkBytes: 4 * 1024 * 1024,
           nodeRegions: data?.regions ?? undefined,
         },
-        (p) => setProgress(p)
+        // 节流：整数百分比变化才触发重渲染（worker 进度消息很密集）
+        (p) =>
+          setProgress((prev) =>
+            prev != null && Math.round(prev * 100) === Math.round(p * 100) ? prev : p
+          )
       );
       setParse(res);
       setDisplayCount(useCount);

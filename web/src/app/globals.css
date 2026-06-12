@@ -44,8 +44,9 @@ body {
     rgba(28, 30, 44, 0.52),
     rgba(16, 18, 30, 0.4)
   );
-  backdrop-filter: blur(26px) saturate(150%);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  /* 18px：背景本身是柔焦图，与 26px 视觉几乎无差，滚动时重滤镜成本低不少 */
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
     0 24px 64px -24px rgba(0, 0, 0, 0.55),
@@ -91,8 +92,20 @@ body {
 }
 
 /* ===== S 级：传说金 呼吸微光 + ✦ 角标 ===== */
+/* 呼吸光环放在 ::before 上做 opacity 动画（合成器层，不重绘），
+   避免直接动画 box-shadow 引发每帧 repaint——等级表里 S 节点可能很多 */
 .tier-s {
+  box-shadow: 0 2px 10px rgba(251, 191, 36, 0.45);
+}
+.tier-s::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 2px 20px rgba(251, 191, 36, 0.9);
+  opacity: 0;
   animation: s-breathe 2.6s ease-in-out infinite;
+  pointer-events: none;
 }
 .tier-s::after {
   content: "\2726"; /* ✦ */
@@ -109,10 +122,10 @@ body {
 @keyframes s-breathe {
   0%,
   100% {
-    box-shadow: 0 2px 10px rgba(251, 191, 36, 0.45);
+    opacity: 0;
   }
   50% {
-    box-shadow: 0 2px 20px rgba(251, 191, 36, 0.9);
+    opacity: 1;
   }
 }
 @keyframes s-spark {
@@ -127,7 +140,7 @@ body {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .tier-s,
+  .tier-s::before,
   .tier-s::after {
     animation: none;
   }
