@@ -35,8 +35,7 @@ export type RunCardProps = {
   actualText: string;
   satPctMode: "total" | "active";
   copying: boolean;
-  runRefs: React.RefObject<Array<HTMLDivElement | null>>;
-  captureRefs: React.RefObject<Array<HTMLDivElement | null>>;
+  onCaptureRef: (idx: number, el: HTMLDivElement | null) => void;
   onTimeModeChange: (idx: number, mode: TimeMode) => void;
   onManualChange: (idx: number, field: "h" | "m" | "s", value: string) => void;
   onActualChange: (idx: number, value: string) => void;
@@ -55,8 +54,7 @@ export const RunCard = React.memo(function RunCard({
   actualText,
   satPctMode,
   copying,
-  runRefs,
-  captureRefs,
+  onCaptureRef,
   onTimeModeChange,
   onManualChange,
   onActualChange,
@@ -115,13 +113,10 @@ export const RunCard = React.memo(function RunCard({
         : "阶段";
 
   return (
-    <div
-      className="runBlock"
-      ref={(el) => { runRefs.current[idx] = el; }}
-    >
+    <div className="runBlock">
       <div
         className="runCapture"
-        ref={(el) => { captureRefs.current[idx] = el; }}
+        ref={(el) => onCaptureRef(idx, el)}
       >
       <div className="runHeader">
         <div className="runLeft">

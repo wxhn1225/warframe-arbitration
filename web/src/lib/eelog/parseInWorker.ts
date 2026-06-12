@@ -111,7 +111,7 @@ async function parseParallel(
 
 /**
  * 在 Web Worker 中解析 EE.log，主线程不阻塞。
- * - 大文件（>256MB）：多 Worker 并行扫描标记行，再回放状态机（快一个数量级）
+ * - 大文件（>16MB，见 PARALLEL_MIN_SIZE）：多 Worker 并行扫描标记行，再回放状态机（快一个数量级）
  * - 一般文件：单 Worker 流式解析
  * - Worker 不可用（极老浏览器）：回退主线程
  */

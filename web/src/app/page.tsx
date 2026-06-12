@@ -607,7 +607,7 @@ export default function Home() {
     setFilterFaction("");
     setSearch("");
     const next: Record<string, boolean> = {};
-    for (const tier of tiers) next[tier] = true;
+    for (const tier of tierlist?.tiers ?? []) next[tier] = true;
     setSelectedTiers(next);
   }
 

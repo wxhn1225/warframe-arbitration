@@ -33,7 +33,6 @@ export function TimelineChart({
   const startScrollRef   = useRef<((sec: number) => void) | null>(null);
   const jumpToRef        = useRef<((sec: number) => void) | null>(null);
   const resumeRef        = useRef<(() => void) | null>(null);
-  const skipRef          = useRef<(() => void) | null>(null);
   const toggleViewRef    = useRef<(() => void) | null>(null);
   const selectedRangeRef = useRef(selectedRange);
   const speedRef         = useRef(speed);
@@ -98,7 +97,6 @@ export function TimelineChart({
 
     const windowDur   = Math.min(maxT * 0.22, 120);
     const totalScroll = Math.max(0, maxT - windowDur);
-    const BASE_MS     = Math.max(6000, totalScroll * 25);
 
     const waveBounds = [0, ...phases.map((p) => p.t), maxT];
 
@@ -393,7 +391,15 @@ export function TimelineChart({
       onToggleViewReady(null);
       onResumeReady(null);
     };
-  }, [allEvents, onRangeChange]);
+  }, [
+    allEvents,
+    onRangeChange,
+    onPlayheadChange,
+    onResumeReady,
+    onSkipReady,
+    onToggleViewReady,
+    onViewModeChange,
+  ]);
 
   const phases = useMemo(() => allEvents.filter((e) => e.kind === "phase"), [allEvents]);
   const maxT = useMemo(() => Math.max(...allEvents.map((e) => e.t), 1), [allEvents]);

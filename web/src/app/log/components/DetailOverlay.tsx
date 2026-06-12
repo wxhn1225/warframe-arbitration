@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { MissionResult } from "@/lib/eelog/parser";
 import {
@@ -78,6 +78,15 @@ export function DetailOverlay({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // TimelineChart 主 effect 的依赖：必须是稳定引用，否则每次渲染都会重建画布动画
+  const handleSkipReady = useCallback((fn: (() => void) | null) => setSkipFn(() => fn), []);
+  const handleToggleViewReady = useCallback((fn: (() => void) | null) => {
+    toggleViewFnRef.current = fn;
+  }, []);
+  const handleResumeReady = useCallback((fn: (() => void) | null) => {
+    resumeFnRef.current = fn;
+  }, []);
+
   const counts = useMemo(() => {
     const c: Record<EventKind, number> = { ticking: 0, drone: 0, phase: 0 };
     for (const e of allEvents) c[e.kind]++;
@@ -102,11 +111,11 @@ export function DetailOverlay({
             onRangeChange={setChartRange}
             playFromTime={playTrigger}
             speed={speed}
-            onSkipReady={(fn) => setSkipFn(() => fn)}
+            onSkipReady={handleSkipReady}
             onPlayheadChange={handlePlayhead}
             onViewModeChange={setViewMode}
-            onToggleViewReady={(fn) => { toggleViewFnRef.current = fn; }}
-            onResumeReady={(fn) => { resumeFnRef.current = fn; }}
+            onToggleViewReady={handleToggleViewReady}
+            onResumeReady={handleResumeReady}
           />
           <div className="speedControls">
             <button
