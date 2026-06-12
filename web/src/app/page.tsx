@@ -118,13 +118,15 @@ function tierStyle(tier: string): TierStyle {
   return TIER_STYLES[tier] ?? TIER_STYLES.unrated!;
 }
 
+// 静态星期表：toLocaleDateString 每次调用都走 Intl，1 年范围 8760 行时开销可观
+const WEEK_ZH = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"] as const;
+
 function dayLabel(ts: number) {
   const d = new Date(ts * 1000);
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
-  const week = d.toLocaleDateString("zh-CN", { weekday: "short" });
-  return `${yyyy}-${mm}-${dd} (${week})`;
+  return `${yyyy}-${mm}-${dd} (${WEEK_ZH[d.getDay()]})`;
 }
 
 /**
@@ -303,13 +305,12 @@ function GlassSelect({
 }
 
 const CARD = "glass rounded-3xl";
-const GHOST_BTN =
-  "glass-inner rounded-xl px-3.5 py-2 text-sm font-medium text-white/80 transition hover:bg-white/20 hover:text-white hover:shadow-md";
 
 export default function Home() {
   const [schedule, setSchedule] = useState<ScheduleEntry[] | null>(null);
   const [nodesFile, setNodesFile] = useState<NodesZhFile | null>(null);
   const [tierlist, setTierlist] = useState<Tierlist | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [selectedTiers, setSelectedTiers] = useState<Record<string, boolean>>(
     {},
@@ -357,33 +358,40 @@ export default function Home() {
 
   useEffect(() => {
     (async () => {
-      const [s, n, td] = await Promise.all([
-        fetch(dataUrl("/data/arbys.schedule.v2.json")).then((r) => r.json()),
-        fetch(dataUrl("/data/arbys.nodes.zh.json")).then((r) => r.json()),
-        fetch(dataUrl("/data/tierlist.default.json")).then((r) => r.json()),
-      ]);
+      try {
+        const [s, n, td] = await Promise.all([
+          fetch(dataUrl("/data/arbys.schedule.v2.json")).then((r) => r.json()),
+          fetch(dataUrl("/data/arbys.nodes.zh.json")).then((r) => r.json()),
+          fetch(dataUrl("/data/tierlist.default.json")).then((r) => r.json()),
+        ]);
 
-      const scheduleArr = decodeSchedule(s as CompactScheduleFile);
-      const nodes = n as NodesZhFile;
+        const scheduleArr = decodeSchedule(s as CompactScheduleFile);
+        const nodes = n as NodesZhFile;
 
-      const allNodeKeys = Object.keys(nodes.nodes ?? {});
-      const localRaw =
-        typeof window !== "undefined"
-          ? localStorage.getItem(STORAGE_KEY)
-          : null;
-      const localTier = localRaw ? (JSON.parse(localRaw) as Tierlist) : null;
-      const normalized = normalizeTierlist(
-        localTier ?? (td as Tierlist),
-        allNodeKeys,
-      );
+        const allNodeKeys = Object.keys(nodes.nodes ?? {});
+        // localStorage 里的等级表可能损坏（手动编辑/旧版本残留），坏了就回退默认
+        let localTier: Tierlist | null = null;
+        try {
+          const localRaw = localStorage.getItem(STORAGE_KEY);
+          localTier = localRaw ? (JSON.parse(localRaw) as Tierlist) : null;
+        } catch {
+          localTier = null;
+        }
+        const normalized = normalizeTierlist(
+          localTier ?? (td as Tierlist),
+          allNodeKeys,
+        );
 
-      setSchedule(scheduleArr);
-      setNodesFile(nodes);
-      setTierlist(normalized);
+        setSchedule(scheduleArr);
+        setNodesFile(nodes);
+        setTierlist(normalized);
 
-      const initSelected: Record<string, boolean> = {};
-      for (const tier of normalized.tiers) initSelected[tier] = true;
-      setSelectedTiers(initSelected);
+        const initSelected: Record<string, boolean> = {};
+        for (const tier of normalized.tiers) initSelected[tier] = true;
+        setSelectedTiers(initSelected);
+      } catch (e) {
+        setLoadError(e instanceof Error ? e.message : "数据加载失败");
+      }
     })();
   }, []);
 
@@ -646,7 +654,13 @@ export default function Home() {
               />
             ))}
           </div>
-          <div className="text-sm text-white/55">正在加载仲裁数据…</div>
+          {loadError ? (
+            <div className="rounded-2xl border border-rose-400/40 bg-rose-500/15 px-4 py-3 text-sm text-rose-100">
+              数据加载失败：{loadError}（请刷新重试）
+            </div>
+          ) : (
+            <div className="text-sm text-white/55">正在加载仲裁数据…</div>
+          )}
         </main>
       </div>
     );

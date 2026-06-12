@@ -165,6 +165,47 @@ test("拦截任务：轮次播报计数，首轮前无人机归入第 1 轮", ()
   assert.deepEqual(m.phases?.map((p) => p.shieldDroneCount), [2, 1]);
 });
 
+// ---- 镜像防御 -------------------------------------------------------------------
+
+const loopWave = (t: number, n: number) =>
+  `${t.toFixed(3)} Script [Info]: LoopDefend.lua: Loop Defense wave: ${n}`;
+const transitionOut = (t: number) =>
+  `${t.toFixed(3)} Script [Info]: DefenseReward.lua: DefenseReward::TransitionOut`;
+
+test("镜像防御：LoopDefend 波次记录边界时间，TransitionOut 计轮", () => {
+  const node = "SolNodeM";
+  const nodeRegions = {
+    [node]: {
+      missionType: "MT_DEFENSE",
+      missionName: "/Lotus/Language/Missions/MissionName_DualDefense",
+    },
+  };
+  const lines = [
+    startName(0),
+    hostLoading(1, node),
+    ssStarted(10),
+    loopWave(20, 1),
+    drone(30),
+    loopWave(80, 2),
+    drone(90),
+    transitionOut(140),  // 第 1 轮结束
+    loopWave(150, 3),
+    loopWave(210, 4),
+    drone(220),
+    transitionOut(270),  // 第 2 轮结束
+    eomInit(300),
+    ssEnding(310),
+    endMark(320, node),
+  ];
+  const { missions } = feedAll(lines, { count: 1, nodeRegions });
+  const m = missions[0]!;
+  assert.equal(m.waveCount, 4);
+  assert.equal(m.roundCount, 2);
+  assert.deepEqual(m.phases?.map((p) => p.shieldDroneCount), [1, 1, 0, 1]);
+  // 每个 LoopDefend 波次都应记录边界时间（相对 SS_STARTED）
+  assert.deepEqual(m.phaseBoundaryTimes, [10, 70, 140, 200]);
+});
+
 // ---- 残局（incomplete）----------------------------------------------------------
 
 test("文件结尾未结束的任务：有 SS_STARTED 和生成信号 → incomplete 仍计入", () => {

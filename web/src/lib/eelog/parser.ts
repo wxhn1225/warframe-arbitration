@@ -510,6 +510,10 @@ export function createEeLineParser(options?: ParseRecentValidFromFileOptions): E
             } else {
               cur.loopDefendLastWave = w;
               const actualWave = (cur.loopDefendOffset ?? 0) + w;
+              if (cur.stateStartedTime != null) {
+                const dt = parseTime(line);
+                if (dt != null) cur.phaseBoundaryTimesRaw.push(dt - cur.stateStartedTime);
+              }
               cur.phaseKind = "wave";
               cur.curPhaseIndex = actualWave;
               cur.waveCount = actualWave;

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import type { MissionResult } from "@/lib/eelog/parser";
 import {
   buildDroneBurstDistrib,
@@ -112,6 +112,23 @@ export const RunCard = React.memo(function RunCard({
         ? "轮次"
         : "阶段";
 
+  // 饱和度/真空期分析在每次重渲染（如输入框打字）时重算会遍历整个时间序列，缓存住
+  const sd = useMemo(
+    () =>
+      m.tickingSeries && m.tickingSeries.length > 0
+        ? buildSatData(m.tickingSeries, metrics.hostTotalSec, selectedSec, m.phaseBoundaryTimes)
+        : null,
+    [m, metrics.hostTotalSec, selectedSec]
+  );
+  const dg = useMemo(
+    () =>
+      m.droneSpawnTimes && m.droneSpawnTimes.length >= 2
+        ? buildDroneGapData(m.droneSpawnTimes, m.tickingSeries, metrics.hostTotalSec, selectedSec, m.phaseBoundaryTimes)
+        : null,
+    [m, metrics.hostTotalSec, selectedSec]
+  );
+  const bd = useMemo(() => buildDroneBurstDistrib(m.droneBurstSizes), [m]);
+
   return (
     <div className="runBlock">
       <div
@@ -145,11 +162,6 @@ export const RunCard = React.memo(function RunCard({
       </div>
 
       {(() => {
-        const sd = m.tickingSeries && m.tickingSeries.length > 0
-          ? buildSatData(m.tickingSeries, metrics.hostTotalSec, selectedSec, m.phaseBoundaryTimes) : null;
-        const dg = m.droneSpawnTimes && m.droneSpawnTimes.length >= 2
-          ? buildDroneGapData(m.droneSpawnTimes, m.tickingSeries, metrics.hostTotalSec, selectedSec, m.phaseBoundaryTimes) : null;
-        const bd = buildDroneBurstDistrib(m.droneBurstSizes);
         if (!sd && !dg && !bd) return null;
         return (
           <div className="satDual">

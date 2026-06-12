@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -33,12 +33,19 @@ export function Backdrop() {
  * 2. 点击/触摸处泛起双圈水波纹
  * 全部用 ref 直接操作 DOM + transform，不触发 React 重渲染。
  */
+// 触屏设备没有悬停指针，光效无意义还占合成开销，直接不挂载。
+// useSyncExternalStore 订阅媒体查询：水合安全，且外接鼠标等设备变化时自动响应
+const HOVER_QUERY = "(hover: hover) and (pointer: fine)";
+const subscribeHover = (cb: () => void) => {
+  const mq = window.matchMedia(HOVER_QUERY);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+};
+const getHasHoverPointer = () => window.matchMedia(HOVER_QUERY).matches;
+const getServerFalse = () => false;
+
 export function PointerEffects() {
-  // 触屏设备没有悬停指针，光效无意义还占合成开销，直接不挂载
-  const [enabled, setEnabled] = useState(false);
-  useEffect(() => {
-    setEnabled(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
-  }, []);
+  const enabled = useSyncExternalStore(subscribeHover, getHasHoverPointer, getServerFalse);
   if (!enabled) return null;
   return <PointerEffectsImpl />;
 }
