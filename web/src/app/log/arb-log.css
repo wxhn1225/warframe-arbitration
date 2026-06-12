@@ -266,10 +266,11 @@
   display: inline-flex; align-items: center; justify-content: center;
   width: 58px; height: 58px; border-radius: 18px;
   font-size: 28px; font-weight: 900; letter-spacing: -0.5px;
-  flex-shrink: 0; position: relative; overflow: hidden;
+  flex-shrink: 0; position: relative;
 }
 
-/* 配色与仲裁队列等级表对齐：金 > 红 > 绿 > 蓝 > 灰（见 page.tsx TIER_STYLES） */
+/* 配色与特效都与仲裁队列等级表对齐（见 page.tsx TIER_STYLES + globals.css tier-s）：
+   S = 传说金 + 呼吸光环 + ✦ 角标；A 系列 = 静态光晕；F = 灰 */
 
 /* F — 灰 */
 .arb-log .gradeF {
@@ -286,52 +287,58 @@
   box-shadow: 0 2px 12px rgba(56,189,248,.5);
 }
 
-/* A — 极光绿（呼吸光） */
+/* A — 极光绿（静态光晕） */
 .arb-log .gradeA {
   color: #fff;
   background: linear-gradient(145deg, #4ade80, #34d399, #06b6d4);
   border: 1.5px solid rgba(110,231,183,.55);
-  box-shadow: 0 2px 14px rgba(34,211,238,.5);
-  animation: aBreath 3.5s ease-in-out infinite;
-}
-@keyframes aBreath {
-  0%,100% { box-shadow: 0 2px 14px rgba(34,211,238,.4); }
-  50%     { box-shadow: 0 2px 26px rgba(34,211,238,.8); }
+  box-shadow: 0 2px 14px rgba(34,211,238,.55);
 }
 
-/* A+ — 玫红（脉冲 + 缩放） */
+/* A+ — 玫红（静态光晕） */
 .arb-log .gradeAPlus {
   color: #fff;
   background: linear-gradient(145deg, #f43f5e, #dc2626);
   border: 1.5px solid rgba(251,113,133,.6);
   box-shadow: 0 2px 12px rgba(244,63,94,.55);
-  animation: aplus 2.2s ease-in-out infinite;
-}
-@keyframes aplus {
-  0%,100% { box-shadow: 0 2px 12px rgba(244,63,94,.45); transform: scale(1); }
-  50%     { box-shadow: 0 2px 26px rgba(244,63,94,.85); transform: scale(1.04); }
 }
 
-/* S — 传说金（强脉冲 + 扫光，与队列页 tier-s 同源） */
+/* S — 传说金：静底 + 呼吸光环（::before 做 opacity 合成层动画，不重绘）+ ✦ 角标 */
 .arb-log .gradeS {
   color: #451a03;
   background: linear-gradient(135deg, #fde047, #fbbf24, #f59e0b);
   border: 2px solid #fbbf24;
-  box-shadow: 0 2px 20px rgba(251,191,36,.6);
-  animation: sGlow 1.6s ease-in-out infinite;
+  box-shadow: 0 2px 10px rgba(251, 191, 36, 0.45);
 }
-
 .arb-log .gradeS::before {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(105deg, transparent 35%, rgba(255,252,180,.65) 50%, transparent 65%);
-  animation: sSweep 1.9s linear infinite;
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  box-shadow: 0 2px 20px rgba(251, 191, 36, 0.9);
+  opacity: 0;
+  animation: gradeSBreathe 2.6s ease-in-out infinite;
+  pointer-events: none;
 }
-
-@keyframes sGlow {
-  0%,100% { box-shadow: 0 2px 16px rgba(251,191,36,.45); }
-  50%     { box-shadow: 0 2px 32px rgba(251,191,36,.85); }
+.arb-log .gradeS::after {
+  content: "\2726"; /* ✦ */
+  position: absolute; top: -8px; right: -7px;
+  font-size: 14px; line-height: 1;
+  color: #fef3c7; text-shadow: 0 0 6px rgba(251, 191, 36, 0.95);
+  animation: gradeSSpark 2.6s ease-in-out infinite;
+  pointer-events: none;
 }
-@keyframes sSweep { 0%{transform:translateX(-160%)} 100%{transform:translateX(260%)} }
+@keyframes gradeSBreathe {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+@keyframes gradeSSpark {
+  0%, 100% { opacity: 0.65; transform: scale(1) rotate(0deg); }
+  50%      { opacity: 1; transform: scale(1.3) rotate(20deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arb-log .gradeS::before,
+  .arb-log .gradeS::after {
+    animation: none;
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════
    Big metrics 2×2
