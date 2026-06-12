@@ -862,12 +862,8 @@ export default function Home() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Link
-              href="/log"
-              className={`${GHOST_BTN} border border-amber-300/30 text-amber-200/90 hover:text-amber-100`}
-              title="上传 EE.log 分析仲裁记录"
-            >
-              日志分析
+            <Link href="/log" className="lm-btn" title="上传 EE.log 分析仲裁记录">
+              <span className="lm-text">日志分析</span>
             </Link>
             <button
               className={GHOST_BTN}
