@@ -9,6 +9,9 @@ Warframe 仲裁一站式工具，纯静态网页，部署在 GitHub Pages：
 | [仲裁队列](https://wxhn1225.github.io/warframe-arbitration/)（`/`） | 整点轮换时间表：查看当前/未来仲裁节点，按等级筛选、搜索、自定义 Tier 评级 |
 | [日志分析](https://wxhn1225.github.io/warframe-arbitration/log/)（`/log`） | 上传 `EE.log` 在浏览器本地解析仲裁记录：无人机统计、期望生息精华、敌人饱和度、事件时间线 |
 
+两个页面共享同一套「烟熏液态玻璃」设计语言与顶部玻璃导航；
+触屏设备自动降级（关闭实时模糊与指针光效），保证手机端滚动流畅。
+
 ---
 
 ## 仲裁队列（`/`）
@@ -16,8 +19,7 @@ Warframe 仲裁一站式工具，纯静态网页，部署在 GitHub Pages：
 - **轮换时间表**：每小时一个节点，展示节点名 / 星球 / 任务类型 / 派系 / 敌人等级（中文）
 - **范围切换**：24 小时 / 7 天 / 30 天 / 3 个月 / 1 年
 - **等级筛选与搜索**：按 Tier（S / A+ / A / A- / B / C / 未评级）过滤，支持节点关键字搜索
-- **自定义等级表**：每个节点的 Tier 可自行调整，保存在 `localStorage`；可恢复默认
-- **导出**：当前选择范围的仲裁序列可导出 TXT / JSON
+- **自定义等级表**：每个节点的 Tier 可自行调整，保存在 `localStorage`；页脚「默认等级」一键恢复
 
 ### 数据来源
 
@@ -34,18 +36,18 @@ Warframe 仲裁一站式工具，纯静态网页，部署在 GitHub Pages：
 
 ### 使用方式
 
-1. 打开页面，拖拽或点击上传 `EE.log`（Windows 路径：`%LOCALAPPDATA%\Warframe`）
+1. 打开页面，拖拽或点击上传 `EE.log`（Windows 路径：`%LOCALAPPDATA%\Warframe`，页面提供一键复制）
 2. 默认展示最近 2 次有效仲裁（时长 < 1 分钟自动排除），次数可调
 
 ### 界面功能
 
 | 功能 | 说明 |
 |------|------|
-| 主题切换 | 深海蓝 / 暖雾暗 / 暖奶油 三套配色，持久化到 `localStorage` |
-| 截图导出 | 一键将单次分析卡片保存为 PNG |
+| 截图导出 | 单次分析卡片合成页面同款玻璃背景出图，复制到剪贴板（失败回退下载 PNG） |
 | 查看详情 | 事件时间线曲线图 + 完整事件列表，支持倍速播放、进度拖拽、波次跳转 |
 | 时间口径 | 主机时间 / 最后客机时间 / 手动输入 |
 | 增益开关 | 4 个资源掉落倍率独立开关，实时重算期望 |
+| 等级徽章 | S / A+ / A / A- / F，配色与特效和队列页等级表一致 |
 
 ### 展示指标
 
@@ -88,9 +90,10 @@ warframe-arbitration/
 │  └─ prepare-warframe-data.mjs   # 构建期裁剪节点/翻译数据（339KB+3.5MB → 87KB+22KB）
 ├─ warframe-public-export-plus/   # Git 子模块：游戏导出数据
 └─ web/                           # Next.js 应用
-   ├─ src/app/                    # 仲裁队列页（/）
+   ├─ src/app/                    # 仲裁队列页（/）与共享站点骨架（背景/导航/光效）
    ├─ src/app/log/                # 日志分析页（/log），样式作用域在 .arb-log 下
-   └─ src/lib/eelog/              # EE.log 解析内核（parser + 扫描/解析 Worker）
+   ├─ src/lib/eelog/              # EE.log 解析内核（parser + 扫描/解析 Worker）
+   └─ tests/                      # 解析内核与数据处理单元测试（node --test）
 ```
 
 ---
@@ -104,6 +107,7 @@ npm install
 
 npm run dev     # 开发服务器（http://localhost:3000）
 npm run build   # 静态导出到 web/out/（自动先裁剪节点数据）
+npm test        # 单元测试（解析内核 / 指标计算 / 数据处理）
 ```
 
 > 日志分析页在 dev 下首次使用前，若 `web/public/warframe-public-export-plus/` 不存在，
