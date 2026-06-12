@@ -104,6 +104,16 @@ body {
   }
 }
 
+/* S 级卡片：流动的金色描边 */
+@keyframes frame-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 300% 50%;
+  }
+}
+
 /* S 级行：缓慢扫过的金色流光 */
 .row-s::after {
   content: "";
