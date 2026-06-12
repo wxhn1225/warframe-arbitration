@@ -74,7 +74,7 @@ type TierStyle = {
   strip: string;
 };
 
-// 玻璃面板上的等级配色：游戏稀有度阶梯（金 > 红 > 紫 > 蓝 > 绿 > 灰），等级差异一眼可辨
+// 玻璃面板上的等级配色：金 > 红 > 绿 > 蓝 > 紫 > 灰，等级差异一眼可辨
 const TIER_STYLES: Record<string, TierStyle> = {
   // S = 传说金：渐变 + 呼吸微光 + ✦ 角标（tier-s 见 globals.css）
   S: {
@@ -88,9 +88,9 @@ const TIER_STYLES: Record<string, TierStyle> = {
     strip: "bg-gradient-to-r from-rose-500 to-red-600",
   },
   A: {
-    chip: "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_2px_12px_rgba(139,92,246,0.55)]",
-    bar: "border-l-violet-400 bg-gradient-to-r from-violet-500/30 via-violet-500/12 to-transparent",
-    strip: "bg-gradient-to-r from-violet-500 to-purple-600",
+    chip: "bg-emerald-500 text-white shadow-[0_2px_12px_rgba(16,185,129,0.5)]",
+    bar: "border-l-emerald-400 bg-gradient-to-r from-emerald-500/28 via-emerald-500/12 to-transparent",
+    strip: "bg-emerald-500",
   },
   "A-": {
     chip: "bg-gradient-to-br from-sky-400 to-blue-500 text-white shadow-[0_2px_12px_rgba(56,189,248,0.5)]",
@@ -98,9 +98,9 @@ const TIER_STYLES: Record<string, TierStyle> = {
     strip: "bg-gradient-to-r from-sky-400 to-blue-500",
   },
   B: {
-    chip: "bg-emerald-500 text-white shadow-[0_2px_12px_rgba(16,185,129,0.5)]",
-    bar: "border-l-emerald-400 bg-gradient-to-r from-emerald-500/28 via-emerald-500/12 to-transparent",
-    strip: "bg-emerald-500",
+    chip: "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_2px_12px_rgba(139,92,246,0.55)]",
+    bar: "border-l-violet-400 bg-gradient-to-r from-violet-500/30 via-violet-500/12 to-transparent",
+    strip: "bg-gradient-to-r from-violet-500 to-purple-600",
   },
   C: {
     chip: "bg-slate-500 text-white shadow-[0_2px_12px_rgba(100,116,139,0.45)]",
