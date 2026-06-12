@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toBlob } from "html-to-image";
+import { toCanvas } from "html-to-image";
 import type { MissionResult, ParseResult } from "@/lib/eelog/parser";
 import { parseEeLogInWorker } from "@/lib/eelog/parseInWorker";
 import { DetailOverlay } from "./components/DetailOverlay";
@@ -32,6 +32,49 @@ type RegionInfo = {
 };
 
 const EMPTY_HMS: ManualHms = { h: "", m: "", s: "" };
+
+const BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+/**
+ * 在画布上铺出与页面一致的“玻璃背后”：
+ * 背景图 cover 填满 + 模糊（等效 backdrop-filter）+ 暗角遮罩 + 面板玻璃底色。
+ * 卡片本身以透明 PNG 叠在上面，出图观感与页面相同。
+ */
+async function paintGlassBackdrop(ctx: CanvasRenderingContext2D, w: number, h: number, pr: number) {
+  ctx.fillStyle = "#11131d";
+  ctx.fillRect(0, 0, w, h);
+  try {
+    const bg = await loadImage(`${BASE_PATH}/bg.jpg`);
+    const scale = Math.max(w / bg.naturalWidth, h / bg.naturalHeight);
+    const dw = bg.naturalWidth * scale;
+    const dh = bg.naturalHeight * scale;
+    if (typeof ctx.filter === "string") ctx.filter = `blur(${18 * pr}px) saturate(150%)`;
+    ctx.drawImage(bg, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    ctx.filter = "none";
+  } catch {
+    // 背景图加载失败就保留纯底色
+  }
+  const vignette = ctx.createLinearGradient(0, 0, 0, h);
+  vignette.addColorStop(0, "rgba(10, 12, 22, 0.5)");
+  vignette.addColorStop(0.5, "rgba(10, 12, 22, 0.25)");
+  vignette.addColorStop(1, "rgba(10, 12, 22, 0.65)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, w, h);
+  const panel = ctx.createLinearGradient(0, 0, w * 0.4, h);
+  panel.addColorStop(0, "rgba(28, 30, 44, 0.52)");
+  panel.addColorStop(1, "rgba(16, 18, 30, 0.40)");
+  ctx.fillStyle = panel;
+  ctx.fillRect(0, 0, w, h);
+}
 
 export default function Page() {
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -176,19 +219,24 @@ export default function Page() {
       // 等待一帧让 React 重渲染（下拉框 → 纯文字）
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       await document.fonts.ready;
-      // 离屏渲染没有页面背景，玻璃会变全透明；截图瞬间切到等效实底色
-      el.classList.add("shotMode");
-      let blob: Blob | null = null;
-      try {
-        blob = await toBlob(el, {
-          pixelRatio: 2,
-          // 按钮等交互元素不进截图
-          filter: (node) =>
-            !(node instanceof HTMLElement && node.dataset.shotIgnore != null),
-        });
-      } finally {
-        el.classList.remove("shotMode");
-      }
+      // 卡片透明出图（半透明玻璃保留 alpha），再合成到模拟页面背景的画布上
+      const pr = 2;
+      const shot = await toCanvas(el, {
+        pixelRatio: pr,
+        // 按钮等交互元素不进截图
+        filter: (node) =>
+          !(node instanceof HTMLElement && node.dataset.shotIgnore != null),
+      });
+      const out = document.createElement("canvas");
+      out.width = shot.width;
+      out.height = shot.height;
+      const ctx = out.getContext("2d");
+      if (!ctx) throw new Error("画布不可用");
+      await paintGlassBackdrop(ctx, out.width, out.height, pr);
+      ctx.drawImage(shot, 0, 0);
+      const blob = await new Promise<Blob | null>((resolve) =>
+        out.toBlob(resolve, "image/png")
+      );
       if (!blob) throw new Error("生成图片失败");
       const url = URL.createObjectURL(blob);
       try {
