@@ -360,7 +360,7 @@ export const RunCard = React.memo(function RunCard({
           style={{ marginLeft: "auto" }}
           onClick={() => onCapture(idx)}
           disabled={copying}
-          {...{ "data-html2canvas-ignore": "true" }}
+          data-shot-ignore="true"
         >
           {copying ? "✓" : "截图"}
         </button>
@@ -505,7 +505,7 @@ export const RunCard = React.memo(function RunCard({
         </div>
       </details>
 
-      <div className="detailBtnRow" {...{ "data-html2canvas-ignore": "true" }}>
+      <div className="detailBtnRow" data-shot-ignore="true">
         <button
           className="detailBtn"
           onClick={() => onShowDetail(m, idx)}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import html2canvas from "html2canvas";
+import { toBlob } from "html-to-image";
 import type { MissionResult, ParseResult } from "@/lib/eelog/parser";
 import { parseEeLogInWorker } from "@/lib/eelog/parseInWorker";
 import { DetailOverlay } from "./components/DetailOverlay";
@@ -176,36 +176,34 @@ export default function Page() {
       // 等待一帧让 React 重渲染（下拉框 → 纯文字）
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       await document.fonts.ready;
-      // 玻璃卡片是半透明的，截图垫一层站点底色保证可读
-      const canvas = await html2canvas(el, {
-        backgroundColor: "#11131d",
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-      });
-      await new Promise<void>((resolve) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            // try clipboard first, fall back to download
-            navigator.clipboard
-              .write([new ClipboardItem({ "image/png": blob })])
-              .catch(() => {
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `arbitration-${String(idx + 1).padStart(2, "0")}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-              })
-              .finally(() => {
-                setTimeout(() => URL.revokeObjectURL(url), 5000);
-              });
-          }
-          resolve();
-        }, "image/png");
-      });
+      // 离屏渲染没有页面背景，玻璃会变全透明；截图瞬间切到等效实底色
+      el.classList.add("shotMode");
+      let blob: Blob | null = null;
+      try {
+        blob = await toBlob(el, {
+          pixelRatio: 2,
+          // 按钮等交互元素不进截图
+          filter: (node) =>
+            !(node instanceof HTMLElement && node.dataset.shotIgnore != null),
+        });
+      } finally {
+        el.classList.remove("shotMode");
+      }
+      if (!blob) throw new Error("生成图片失败");
+      const url = URL.createObjectURL(blob);
+      try {
+        // 先试剪贴板，失败则回退下载
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      } catch {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `arbitration-${String(idx + 1).padStart(2, "0")}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } finally {
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       alert(`截图失败：${msg}`);

@@ -122,7 +122,7 @@ checkout 时拉取子模块）。
 | React 19 + TypeScript | UI 与类型安全 |
 | Tailwind CSS 4 | 仲裁队列页样式 |
 | @tanstack/react-virtual | 长列表虚拟滚动 |
-| html2canvas | 日志分析页截图导出 |
+| html-to-image | 日志分析页截图导出 |
 | Web Worker | EE.log 解析与大文件并行扫描 |
 | warframe-public-export-plus | Git 子模块，节点/派系/任务类型数据 |
 | GitHub Actions + GitHub Pages | CI/CD |

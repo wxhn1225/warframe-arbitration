@@ -233,6 +233,18 @@
 /* capture area */
 .arb-log .runCapture { padding-bottom: 4px; }
 
+/* ── 截图模式 ──
+   离屏渲染拿不到页面背景，backdrop-filter 玻璃会变成全透明；
+   出图瞬间切换为等效实底色，保证 PNG 观感与页面一致 */
+.arb-log .runCapture.shotMode {
+  background: #181c2b;
+  --card-bg: #181c2b;
+  --card-border: rgba(255, 255, 255, 0.16);
+  --inset-bg: #11141f;
+  --inset-border: rgba(255, 255, 255, 0.10);
+  --btn-bg: rgba(255, 255, 255, 0.07);
+}
+
 /* ── run header ── */
 .arb-log .runHeader { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px 18px 0; }
 .arb-log .runLeft { display:flex; align-items:center; gap:10px; min-width:0; }
