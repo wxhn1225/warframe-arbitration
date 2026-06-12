@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useDeferredValue,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -318,6 +319,9 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   const [tab, setTab] = useState<"schedule" | "tierlist">("schedule");
+  // 切换按钮用 tab 立即高亮，重内容（整个时间表/等级表）用延迟值渲染：
+  // 点击先快速提交一帧按钮反馈，内容在下一帧跟上，消除"点了没反应"的顿感
+  const deferredTab = useDeferredValue(tab);
   const [rangeHours, setRangeHours] = useState<RangeHours>(168);
   const [filterPlanet, setFilterPlanet] = useState("");
   const [filterMission, setFilterMission] = useState("");
@@ -340,7 +344,7 @@ export default function Home() {
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, [tab, isMobile]);
+  }, [deferredTab, isMobile]);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 30_000);
@@ -934,7 +938,7 @@ export default function Home() {
             </label>
           </div>
 
-          {tab === "schedule" ? (
+          {deferredTab === "schedule" ? (
             <div className="space-y-3">
               <div
                 ref={scheduleTopRef}
@@ -1220,7 +1224,7 @@ export default function Home() {
         </footer>
       </main>
 
-      {showScrollTop && tab === "schedule" ? (
+      {showScrollTop && deferredTab === "schedule" ? (
         <button
           className="fixed bottom-6 right-6 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-white text-neutral-900 shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition hover:bg-white/85 active:scale-95"
           onClick={() =>

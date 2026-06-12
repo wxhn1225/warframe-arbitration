@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -127,7 +127,16 @@ const NAV_TABS = [
  */
 export function SiteNav() {
   const pathname = usePathname();
-  const isLog = pathname.startsWith("/log");
+  // 路由切换要等目标页整体挂载完，pathname 才会变；期间药丸不动会显得"点了没反应"。
+  // 点击时先乐观高亮目标标签，真实路径跟上后清掉。
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setPendingHref(null);
+  }
+  const shownPath = pendingHref ?? pathname;
+  const isLog = shownPath.startsWith("/log");
 
   return (
     <div className="sticky top-3 z-30 mx-auto w-full max-w-6xl px-5 md:px-8">
@@ -153,6 +162,7 @@ export function SiteNav() {
               <Link
                 key={href}
                 href={href}
+                onClick={() => setPendingHref(href)}
                 className={[
                   "rounded-lg px-4 py-1.5 text-sm font-semibold transition md:px-5",
                   active
