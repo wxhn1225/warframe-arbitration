@@ -157,6 +157,39 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
+/* ===== 触屏设备降级 =====
+   手机 GPU 跑实时 backdrop-filter 非常吃力（滚动每帧重算模糊），
+   触屏改用更实的半透明底：观感接近毛玻璃，滚动流畅 */
+@media (hover: none) {
+  .glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(
+      155deg,
+      rgba(30, 32, 48, 0.93),
+      rgba(17, 19, 32, 0.9)
+    );
+  }
+  .glass-inner {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .glass-menu {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(22, 24, 38, 0.97);
+  }
+  .spotlight,
+  .ripple {
+    display: none;
+  }
+  /* 流动铬字动画在触屏上停掉（保留静态金属渐变） */
+  .chrome-word {
+    animation: none;
+  }
+}
+
 /* ===== 指针特效 ===== */
 
 /* 跟随鼠标的柔光：screen 混合叠在玻璃上，像光透过玻璃折射 */

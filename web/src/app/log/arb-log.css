@@ -100,6 +100,15 @@
   box-shadow: 0 0 0 3px var(--ink-bg), var(--card-shadow);
 }
 
+/* 触屏设备降级：面板很高，实时模糊在手机上是滚动卡顿的主因 */
+@media (hover: none) {
+  .arb-log .panel {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: linear-gradient(155deg, rgba(26, 28, 43, 0.94), rgba(15, 17, 29, 0.92));
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    Status bar
 ═══════════════════════════════════════════════════════════ */

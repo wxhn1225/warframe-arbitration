@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -34,6 +34,16 @@ export function Backdrop() {
  * 全部用 ref 直接操作 DOM + transform，不触发 React 重渲染。
  */
 export function PointerEffects() {
+  // 触屏设备没有悬停指针，光效无意义还占合成开销，直接不挂载
+  const [enabled, setEnabled] = useState(false);
+  useEffect(() => {
+    setEnabled(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+  }, []);
+  if (!enabled) return null;
+  return <PointerEffectsImpl />;
+}
+
+function PointerEffectsImpl() {
   const spotRef = useRef<HTMLDivElement | null>(null);
   const hostRef = useRef<HTMLDivElement | null>(null);
 
