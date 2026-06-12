@@ -14,7 +14,6 @@ import {
   decodeSchedule,
   displayNode,
   downloadJson,
-  downloadText,
   findCurrentIndex,
   hhmm,
   normalizeTierlist,
@@ -126,14 +125,6 @@ function dayLabel(ts: number) {
   const dd = String(d.getDate()).padStart(2, "0");
   const week = d.toLocaleDateString("zh-CN", { weekday: "short" });
   return `${yyyy}-${mm}-${dd} (${week})`;
-}
-
-function dateTimeLabel(ts: number) {
-  const d = new Date(ts * 1000);
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd} ${hhmm(ts)}`;
 }
 
 /**
@@ -625,51 +616,15 @@ export default function Home() {
   }
 
   function resetToDefault() {
+    if (!window.confirm("确定恢复默认等级表吗？\n你的自定义等级调整将被清除，页面会刷新。")) {
+      return;
+    }
     localStorage.removeItem(STORAGE_KEY);
     location.reload();
   }
 
   function exportTierlistJson() {
     downloadJson("tierlist.default.json", tierlist);
-  }
-
-  function exportScheduleTxt() {
-    const days = Math.round(rangeHours / 24);
-    const lines = rangeItems
-      .map(({ ts, nodeKey }) => {
-        const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
-        const tier = tierOfNode[nodeKey] ?? "unrated";
-        return `${dateTimeLabel(ts)} • ${displayNode(n)} (${tierZh(tier)})`;
-      })
-      .join("\n");
-
-    downloadText(`arbys-${days}d.txt`, lines + "\n");
-  }
-
-  function exportScheduleJson() {
-    const days = Math.round(rangeHours / 24);
-    downloadJson(`arbys-${days}d.json`, {
-      schema: 1,
-      rangeHours,
-      exportedAt: new Date().toISOString(),
-      schedule: rangeItems.map(({ ts, nodeKey }) => {
-        const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
-        const tier = tierOfNode[nodeKey] ?? "unrated";
-        return {
-          ts,
-          nodeKey,
-          hhmm: hhmm(ts),
-          day: dayLabel(ts),
-          tier,
-          tierZh: tierZh(tier),
-          mission: n.missionNameZh,
-          faction: n.factionNameZh,
-          node: n.nameZh,
-          planet: n.systemNameZh,
-          display: displayNode(n),
-        };
-      }),
-    });
   }
 
   if (!schedule || !nodesFile || !tierlist) {
@@ -744,46 +699,6 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <main className="relative z-10 mx-auto max-w-6xl space-y-5 px-5 py-6 md:px-8 md:py-8">
-        {/* ======= 顶栏：页面操作 ======= */}
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-xl font-extrabold tracking-tight text-white">
-            仲裁队列
-          </h1>
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={GHOST_BTN}
-              onClick={exportScheduleTxt}
-              title="导出当前选择范围的仲裁序列 TXT"
-            >
-              导出 TXT
-            </button>
-            <button
-              className={GHOST_BTN}
-              onClick={exportScheduleJson}
-              title="导出当前选择范围的仲裁序列 JSON"
-            >
-              导出 JSON
-            </button>
-            {isDevMode && (
-              <button
-                className={GHOST_BTN}
-                onClick={exportTierlistJson}
-                title="导出当前等级表 JSON（可发给开发者更新默认值）"
-              >
-                导出等级表
-              </button>
-            )}
-            <button
-              className={GHOST_BTN}
-              onClick={resetToDefault}
-              title="清空本地保存的等级表，恢复默认"
-            >
-              恢复默认等级
-            </button>
-          </div>
-        </header>
-
         {/* ======= 当前仲裁 ======= */}
         <section className={`${CARD} overflow-hidden`}>
           <div className="grid gap-6 p-5 md:grid-cols-[1fr_280px] md:items-stretch md:p-7">
@@ -930,6 +845,22 @@ export default function Home() {
             >
               清空筛选
             </button>
+            <button
+              className={`shrink-0 ${GHOST_BTN}`}
+              onClick={resetToDefault}
+              title="清空本地保存的等级表，恢复默认"
+            >
+              默认等级
+            </button>
+            {isDevMode && (
+              <button
+                className={`shrink-0 ${GHOST_BTN}`}
+                onClick={exportTierlistJson}
+                title="导出当前等级表 JSON（可发给开发者更新默认值）"
+              >
+                导出等级表
+              </button>
+            )}
           </div>
 
           {/* 一体化搜索条：三个下拉 + 关键词收进同一块玻璃，分段式布局 */}
