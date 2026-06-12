@@ -598,6 +598,9 @@ export default function Home() {
         : (isMobile ? 130 : 58),
     overscan: 12,
     scrollMargin: listScrollMargin,
+    // 测量缓存默认按索引记忆；筛选让所有行索引位移后，旧高度会错配到新行上
+    // 导致行重叠。用行身份作缓存键，列表变化时各行偏移立即正确。
+    getItemKey: (i) => flatItems[i]?.key ?? i,
   });
 
   function clearFilters() {
