@@ -265,7 +265,7 @@ export default function Page() {
     <div className="arb-log" data-theme={theme === "e" ? undefined : theme}>
     <div className="wrap">
       <header className="siteHeader">
-        <span className="siteTitle">战绩分析</span>
+        <span className="siteTitle">日志分析</span>
         <nav className="siteNav">
           <Link href="/" className="btn ghost">
             仲裁队列

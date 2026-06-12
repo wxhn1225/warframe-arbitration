@@ -865,9 +865,9 @@ export default function Home() {
             <Link
               href="/log"
               className={`${GHOST_BTN} border border-amber-300/30 text-amber-200/90 hover:text-amber-100`}
-              title="上传 EE.log 分析仲裁战绩"
+              title="上传 EE.log 分析仲裁记录"
             >
-              战绩分析
+              日志分析
             </Link>
             <button
               className={GHOST_BTN}
