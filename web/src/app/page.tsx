@@ -317,6 +317,88 @@ const GHOST_BTN =
   "glass-inner rounded-xl px-3.5 py-2 text-sm font-medium text-white/80 transition hover:bg-white/20 hover:text-white hover:shadow-md";
 
 /**
+ * 日志分析入口：液态金属按钮。
+ * 悬停时用 SVG feTurbulence + feDisplacementMap 让铬字真正"流动变形"
+ * （参考 Shopify Editions 的液态金属效果），离开后回弹复原。
+ */
+function LiquidMetalLink() {
+  const turbRef = useRef<SVGFETurbulenceElement | null>(null);
+  const dispRef = useRef<SVGFEDisplacementMapElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const scaleRef = useRef(0);
+  const targetRef = useRef(0);
+  const phaseRef = useRef(0);
+
+  const tick = () => {
+    // 位移幅度向目标值缓动，湍流相位持续漂移 → 金属液面流动感
+    scaleRef.current += (targetRef.current - scaleRef.current) * 0.1;
+    phaseRef.current += 0.045;
+    const s = scaleRef.current;
+    if (dispRef.current) dispRef.current.setAttribute("scale", s.toFixed(2));
+    if (turbRef.current) {
+      const fx = 0.011 + Math.sin(phaseRef.current) * 0.005;
+      const fy = 0.024 + Math.cos(phaseRef.current * 0.8) * 0.007;
+      turbRef.current.setAttribute("baseFrequency", `${fx.toFixed(4)} ${fy.toFixed(4)}`);
+    }
+    if (s > 0.08 || targetRef.current > 0) {
+      rafRef.current = requestAnimationFrame(tick);
+    } else {
+      if (dispRef.current) dispRef.current.setAttribute("scale", "0");
+      rafRef.current = null;
+    }
+  };
+  const start = () => {
+    targetRef.current = 16;
+    if (rafRef.current == null) rafRef.current = requestAnimationFrame(tick);
+  };
+  const stop = () => {
+    targetRef.current = 0;
+  };
+  useEffect(() => {
+    return () => {
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  return (
+    <Link
+      href="/log"
+      className="lm-btn"
+      title="上传 EE.log 分析仲裁记录"
+      onPointerEnter={start}
+      onPointerLeave={stop}
+    >
+      <svg aria-hidden width="0" height="0" style={{ position: "absolute" }}>
+        <filter id="lm-liquid" x="-40%" y="-40%" width="180%" height="180%">
+          <feTurbulence
+            ref={turbRef}
+            type="fractalNoise"
+            baseFrequency="0.011 0.024"
+            numOctaves="2"
+            seed="3"
+            result="noise"
+          />
+          <feDisplacementMap
+            ref={dispRef}
+            in="SourceGraphic"
+            in2="noise"
+            scale="0"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
+      <span
+        className="lm-text"
+        style={{ filter: "url(#lm-liquid) drop-shadow(0 1px 1.5px rgba(0,0,0,0.55))" }}
+      >
+        日志分析
+      </span>
+    </Link>
+  );
+}
+
+/**
  * 全页背景：二次元画面 + 轻微暗角，玻璃卡片的折射源。
  * 注意：不能用负 z-index——body 自身的不透明背景会把它盖住，
  * 这里用 z-0，内容区用 relative z-10 叠在上面。
@@ -862,9 +944,7 @@ export default function Home() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Link href="/log" className="lm-btn" title="上传 EE.log 分析仲裁记录">
-              <span className="lm-text">日志分析</span>
-            </Link>
+            <LiquidMetalLink />
             <button
               className={GHOST_BTN}
               onClick={exportScheduleTxt}

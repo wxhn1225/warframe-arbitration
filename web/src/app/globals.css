@@ -74,8 +74,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border-radius: 0.75rem;
-  padding: 8px 18px;
+  border-radius: 1rem;
+  padding: 12px 30px;
   border: 1.5px solid transparent;
   /* 深色内底 + 旋转的铬色渐变描边 */
   background:
@@ -149,9 +149,9 @@ body {
 
 /* 液态铬文字：流动的金属渐变填充 */
 .lm-text {
-  font-size: 0.92rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
   background: linear-gradient(
     100deg,
     #aab3c2 0%,
