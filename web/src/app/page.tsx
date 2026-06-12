@@ -70,77 +70,47 @@ function tierZh(tier: string) {
 
 type TierStyle = {
   chip: string;
-  /** 卡片渐变描边（外框） */
-  frame: string;
-  /** 卡片外圈环境光晕 */
-  halo: string;
-  /** 卡片右侧巨型等级字母水印 */
-  watermark: string;
-  /** 卡片内部从左侧渗入的等级色 */
-  tint: string;
+  bar: string;
   strip: string;
 };
 
-// 等级视觉语言：每条记录是一张「等级装备卡」——
-// 渐变描边 + 环境光晕 + 巨型字母水印 + 左侧渗色，等级越高越华丽；
-// S 级描边是流动的金色光带（frame-flow），内部还有金色流光扫过（row-s）
+// 玻璃面板上的等级配色：金 > 红 > 绿 > 蓝 > 紫 > 灰，等级差异一眼可辨
 const TIER_STYLES: Record<string, TierStyle> = {
+  // S = 传说金：渐变 + 呼吸微光 + ✦ 角标（tier-s 见 globals.css）
   S: {
     chip: "tier-s relative bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-500 text-amber-950",
-    frame:
-      "bg-[linear-gradient(120deg,#fde047,#f59e0b,#fff7cc,#f59e0b,#fde047)] bg-[length:300%_100%] animate-[frame-flow_4s_linear_infinite]",
-    halo: "shadow-[0_0_30px_-4px_rgba(251,191,36,0.6)]",
-    watermark: "text-amber-300/25",
-    tint: "bg-gradient-to-r from-amber-400/20 via-amber-400/[0.06] to-transparent",
+    bar: "border-l-amber-300 bg-gradient-to-r from-amber-400/35 via-yellow-400/14 to-transparent",
     strip: "bg-gradient-to-r from-yellow-300 to-amber-500",
   },
   "A+": {
     chip: "bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-[0_2px_12px_rgba(244,63,94,0.55)]",
-    frame: "bg-gradient-to-r from-rose-400 via-red-500 to-rose-400",
-    halo: "shadow-[0_0_24px_-6px_rgba(244,63,94,0.55)]",
-    watermark: "text-rose-400/25",
-    tint: "bg-gradient-to-r from-rose-500/15 via-rose-500/[0.05] to-transparent",
+    bar: "border-l-rose-400 bg-gradient-to-r from-rose-500/30 via-rose-500/12 to-transparent",
     strip: "bg-gradient-to-r from-rose-500 to-red-600",
   },
-  // A =「极光绿」：翠绿 -> 青 -> 蓝青的大跨度渐变
+  // A 用「极光绿」：翠绿 -> 青 -> 蓝青的大跨度渐变，像夜空极光
   A: {
     chip: "bg-gradient-to-br from-green-400 via-emerald-400 to-cyan-500 text-white shadow-[0_2px_14px_rgba(34,211,238,0.55)]",
-    frame: "bg-gradient-to-r from-green-400 via-emerald-400 to-cyan-500",
-    halo: "shadow-[0_0_24px_-6px_rgba(34,211,238,0.5)]",
-    watermark: "text-emerald-300/25",
-    tint: "bg-gradient-to-r from-emerald-400/15 via-cyan-500/[0.05] to-transparent",
+    bar: "border-l-emerald-300 bg-gradient-to-r from-green-400/30 via-cyan-500/14 to-transparent",
     strip: "bg-gradient-to-r from-green-400 via-emerald-400 to-cyan-500",
   },
   "A-": {
     chip: "bg-gradient-to-br from-sky-400 to-blue-500 text-white shadow-[0_2px_12px_rgba(56,189,248,0.5)]",
-    frame: "bg-gradient-to-r from-sky-400/90 to-blue-500/90",
-    halo: "shadow-[0_0_20px_-6px_rgba(56,189,248,0.45)]",
-    watermark: "text-sky-400/25",
-    tint: "bg-gradient-to-r from-sky-500/12 via-sky-500/[0.04] to-transparent",
+    bar: "border-l-sky-400 bg-gradient-to-r from-sky-500/28 via-sky-500/12 to-transparent",
     strip: "bg-gradient-to-r from-sky-400 to-blue-500",
   },
   B: {
     chip: "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_2px_12px_rgba(139,92,246,0.55)]",
-    frame: "bg-gradient-to-r from-violet-500/80 to-purple-600/80",
-    halo: "shadow-[0_0_18px_-6px_rgba(139,92,246,0.4)]",
-    watermark: "text-violet-400/25",
-    tint: "bg-gradient-to-r from-violet-500/12 via-violet-500/[0.04] to-transparent",
+    bar: "border-l-violet-400 bg-gradient-to-r from-violet-500/30 via-violet-500/12 to-transparent",
     strip: "bg-gradient-to-r from-violet-500 to-purple-600",
   },
   C: {
     chip: "bg-slate-500 text-white shadow-[0_2px_12px_rgba(100,116,139,0.45)]",
-    frame: "bg-slate-400/50",
-    halo: "",
-    watermark: "text-slate-400/20",
-    tint: "bg-gradient-to-r from-slate-400/10 to-transparent",
+    bar: "border-l-slate-400 bg-gradient-to-r from-slate-500/25 via-slate-500/10 to-transparent",
     strip: "bg-slate-500",
   },
   unrated: {
     chip: "bg-white/15 text-white/75 ring-1 ring-inset ring-white/25",
-    frame: "bg-white/15",
-    halo: "",
-    watermark: "text-white/[0.07]",
-    tint: "",
+    bar: "border-l-white/30 bg-white/[0.05]",
     strip: "bg-white/30",
   },
 };
@@ -1203,76 +1173,47 @@ export default function Home() {
                         }}
                       >
                         {item.type === "day" ? (
-                          <div className="mb-2.5 flex items-center gap-3 pt-1">
-                            <span className="glass-inner flex items-center gap-2 rounded-full px-3.5 py-1.5">
-                              <span className="inline-block h-1.5 w-1.5 rotate-45 bg-gradient-to-br from-sky-400 to-violet-500" />
-                              <span className="text-sm font-bold tracking-wide text-white/90">
-                                {item.day}
-                              </span>
+                          <div className="glass-inner mb-2 flex items-center gap-2 rounded-xl px-3.5 py-2">
+                            <span className="inline-block h-1.5 w-1.5 rotate-45 bg-gradient-to-br from-sky-500 to-violet-500" />
+                            <span className="text-sm font-bold tracking-wide text-white/90">
+                              {item.day}
                             </span>
-                            <div className="h-px flex-1 bg-white/15" />
                           </div>
                         ) : (() => {
                           const { ts, nodeKey } = item;
                           const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
                           const tier = tierOfNode[nodeKey] ?? "unrated";
-                          const st = tierStyle(tier);
                           return (
                             <div
                               className={[
-                                "relative mb-2.5 rounded-2xl p-[1.5px]",
-                                st.frame,
-                                st.halo,
+                                "mb-2 rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md",
+                                tierStyle(tier).bar,
                               ].join(" ")}
                             >
-                              <div
-                                className={[
-                                  "relative overflow-hidden rounded-[14px] bg-[#141726]/85 p-3.5 backdrop-blur-xl",
-                                  tier === "S" ? "row-s" : "",
-                                ].join(" ")}
-                              >
-                                {st.tint ? (
-                                  <span
-                                    aria-hidden
-                                    className={["pointer-events-none absolute inset-0", st.tint].join(" ")}
-                                  />
-                                ) : null}
-                                <span
-                                  aria-hidden
-                                  className={[
-                                    "pointer-events-none absolute -right-1 -top-4 select-none text-6xl font-black italic leading-none",
-                                    st.watermark,
-                                  ].join(" ")}
-                                >
-                                  {tierZh(tier)}
-                                </span>
-                                <div className="relative">
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div className="font-mono text-base font-semibold tabular-nums text-white">
-                                      {hhmm(ts)}
-                                    </div>
-                                    <TierChip tier={tier} />
-                                  </div>
-                                  <div className="mt-1.5 text-sm font-semibold text-white/90">
-                                    {displayNode(n)}
-                                  </div>
-                                  <div className="mt-0.5 font-mono text-xs text-white/55">
-                                    {nodeKey}
-                                  </div>
-                                  <div className="mt-3">
-                                    <select
-                                      className="w-full rounded-lg border border-white/25 bg-white/10 px-2.5 py-2 text-sm text-white/90 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
-                                      value={tier}
-                                      onChange={(e) => moveNode(nodeKey, e.target.value)}
-                                    >
-                                      {tiers.map((t) => (
-                                        <option key={t} value={t}>
-                                          移动到 {tierZh(t)}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="font-mono text-base font-semibold tabular-nums text-white">
+                                  {hhmm(ts)}
                                 </div>
+                                <TierChip tier={tier} />
+                              </div>
+                              <div className="mt-1.5 text-sm font-semibold text-white/90">
+                                {displayNode(n)}
+                              </div>
+                              <div className="mt-0.5 font-mono text-xs text-white/55">
+                                {nodeKey}
+                              </div>
+                              <div className="mt-3">
+                                <select
+                                  className="w-full rounded-lg border border-white/25 bg-white/10 px-2.5 py-2 text-sm text-white/90 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
+                                  value={tier}
+                                  onChange={(e) => moveNode(nodeKey, e.target.value)}
+                                >
+                                  {tiers.map((t) => (
+                                    <option key={t} value={t}>
+                                      移动到 {tierZh(t)}
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
                             </div>
                           );
@@ -1283,106 +1224,85 @@ export default function Home() {
                 </div>
               )}
 
-              {/* 桌面/平板：虚拟滚动等级卡片流 */}
+              {/* 桌面/平板：虚拟滚动表格 */}
               {!isMobile && flatItems.length > 0 && (
-                <div
-                  ref={listRef}
-                  style={{ height: virtualizer.getTotalSize(), position: "relative" }}
-                >
-                  {virtualizer.getVirtualItems().map((vRow) => {
-                    const item = flatItems[vRow.index];
-                    if (!item) return null;
-                    return (
-                      <div
-                        key={item.key}
-                        data-index={vRow.index}
-                        ref={virtualizer.measureElement}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          transform: `translateY(${vRow.start - virtualizer.options.scrollMargin}px)`,
-                        }}
-                      >
-                        {item.type === "day" ? (
-                          <div className="mb-3 flex items-center gap-3 pt-1.5">
-                            <span className="glass-inner flex items-center gap-2 rounded-full px-4 py-1.5">
-                              <span className="inline-block h-1.5 w-1.5 rotate-45 bg-gradient-to-br from-sky-400 to-violet-500" />
+                <div className="overflow-hidden rounded-2xl border border-white/20 bg-white/[0.06] backdrop-blur-md">
+                  <div className="grid grid-cols-12 gap-2 border-b border-white/15 bg-white/10 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white/55">
+                    <div className="col-span-2">时间</div>
+                    <div className="col-span-7">任务</div>
+                    <div className="col-span-3">等级</div>
+                  </div>
+                  <div
+                    ref={listRef}
+                    style={{ height: virtualizer.getTotalSize(), position: "relative" }}
+                  >
+                    {virtualizer.getVirtualItems().map((vRow) => {
+                      const item = flatItems[vRow.index];
+                      if (!item) return null;
+                      return (
+                        <div
+                          key={item.key}
+                          data-index={vRow.index}
+                          ref={virtualizer.measureElement}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            transform: `translateY(${vRow.start - virtualizer.options.scrollMargin}px)`,
+                          }}
+                        >
+                          {item.type === "day" ? (
+                            <div className="flex items-center gap-3 border-b border-white/15 bg-white/10 px-5 py-3 backdrop-blur-sm">
+                              <span className="inline-block h-1.5 w-1.5 rotate-45 bg-gradient-to-br from-sky-500 to-violet-500" />
                               <span className="text-sm font-bold tracking-wide text-white/90">
                                 {item.day}
                               </span>
-                            </span>
-                            <div className="h-px flex-1 bg-white/15" />
-                          </div>
-                        ) : (() => {
-                          const { ts, nodeKey } = item;
-                          const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
-                          const tier = tierOfNode[nodeKey] ?? "unrated";
-                          const st = tierStyle(tier);
-                          return (
-                            <div
-                              className={[
-                                "relative mb-2.5 rounded-2xl p-[1.5px] transition-transform duration-200 hover:-translate-y-0.5",
-                                st.frame,
-                                st.halo,
-                              ].join(" ")}
-                            >
+                              <div className="h-px flex-1 bg-white/20" />
+                            </div>
+                          ) : (() => {
+                            const { ts, nodeKey } = item;
+                            const n = nodes[nodeKey] ?? fallbackNode(nodeKey);
+                            const tier = tierOfNode[nodeKey] ?? "unrated";
+                            return (
                               <div
                                 className={[
-                                  "relative overflow-hidden rounded-[14px] bg-[#141726]/85 px-5 py-3 backdrop-blur-xl",
-                                  tier === "S" ? "row-s" : "",
+                                  "grid grid-cols-12 items-center gap-2 border-b border-white/10 border-l-4 px-5 py-3 transition hover:brightness-125",
+                                  tierStyle(tier).bar,
                                 ].join(" ")}
                               >
-                                {st.tint ? (
-                                  <span
-                                    aria-hidden
-                                    className={["pointer-events-none absolute inset-0", st.tint].join(" ")}
-                                  />
-                                ) : null}
-                                <span
-                                  aria-hidden
-                                  className={[
-                                    "pointer-events-none absolute -top-5 right-44 select-none text-7xl font-black italic leading-none",
-                                    st.watermark,
-                                  ].join(" ")}
-                                >
-                                  {tierZh(tier)}
-                                </span>
-                                <div className="relative flex items-center gap-4">
-                                  <div className="w-16 shrink-0 font-mono text-lg font-bold tabular-nums text-white">
-                                    {hhmm(ts)}
+                                <div className="col-span-2 font-mono tabular-nums text-white/80">
+                                  {hhmm(ts)}
+                                </div>
+                                <div className="col-span-7 min-w-0">
+                                  <div className="truncate text-sm font-semibold text-white/90">
+                                    {displayNode(n)}
                                   </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="truncate text-sm font-semibold text-white/90">
-                                      {displayNode(n)}
-                                    </div>
-                                    <div className="mt-0.5 font-mono text-xs text-white/45">
-                                      {nodeKey}
-                                    </div>
-                                  </div>
-                                  <div className="flex shrink-0 items-center gap-2.5">
-                                    <TierChip tier={tier} />
-                                    <select
-                                      className="rounded-lg border border-white/25 bg-white/10 px-2 py-1.5 text-sm text-white/90 shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
-                                      value={tier}
-                                      onChange={(e) => moveNode(nodeKey, e.target.value)}
-                                    >
-                                      {tiers.map((t) => (
-                                        <option key={t} value={t}>
-                                          移动到 {tierZh(t)}
-                                        </option>
-                                      ))}
-                                    </select>
+                                  <div className="mt-0.5 font-mono text-xs text-white/55">
+                                    {nodeKey}
                                   </div>
                                 </div>
+                                <div className="col-span-3 flex items-center gap-2.5">
+                                  <TierChip tier={tier} />
+                                  <select
+                                    className="rounded-lg border border-white/25 bg-white/10 px-2 py-1.5 text-sm text-white/90 shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
+                                    value={tier}
+                                    onChange={(e) => moveNode(nodeKey, e.target.value)}
+                                  >
+                                    {tiers.map((t) => (
+                                      <option key={t} value={t}>
+                                        移动到 {tierZh(t)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    );
-                  })}
+                            );
+                          })()}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
@@ -1423,42 +1343,17 @@ export default function Home() {
                                 <div
                                   key={nodeKey}
                                   className={[
-                                    "relative rounded-2xl p-[1.5px]",
-                                    tierStyle(nodeTier).frame,
-                                    tierStyle(nodeTier).halo,
+                                    "rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition hover:brightness-125",
+                                    tierStyle(nodeTier).bar,
                                   ].join(" ")}
                                 >
-                                  <div
-                                    className={[
-                                      "relative overflow-hidden rounded-[14px] bg-[#141726]/85 p-3.5 backdrop-blur-xl",
-                                      nodeTier === "S" ? "row-s" : "",
-                                    ].join(" ")}
-                                  >
-                                  {tierStyle(nodeTier).tint ? (
-                                    <span
-                                      aria-hidden
-                                      className={[
-                                        "pointer-events-none absolute inset-0",
-                                        tierStyle(nodeTier).tint,
-                                      ].join(" ")}
-                                    />
-                                  ) : null}
-                                  <span
-                                    aria-hidden
-                                    className={[
-                                      "pointer-events-none absolute -right-1 -top-4 select-none text-6xl font-black italic leading-none",
-                                      tierStyle(nodeTier).watermark,
-                                    ].join(" ")}
-                                  >
-                                    {tierZh(nodeTier)}
-                                  </span>
-                                  <div className="relative text-sm font-semibold text-white/90">
+                                  <div className="text-sm font-semibold text-white/90">
                                     {text}
                                   </div>
-                                  <div className="relative mt-1 font-mono text-xs text-white/55">
+                                  <div className="mt-1 font-mono text-xs text-white/55">
                                     {nodeKey}
                                   </div>
-                                  <div className="relative mt-3 flex flex-wrap items-center gap-2.5">
+                                  <div className="mt-3 flex flex-wrap items-center gap-2.5">
                                     <TierChip tier={nodeTier} />
                                     <select
                                       className="rounded-lg border border-white/25 bg-white/10 px-2 py-1.5 text-sm text-white/90 shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
@@ -1471,7 +1366,6 @@ export default function Home() {
                                         </option>
                                       ))}
                                     </select>
-                                  </div>
                                   </div>
                                 </div>
                               );
