@@ -1,0 +1,759 @@
+// ---- 导出类型 ---------------------------------------------------------------
+
+export type TickingPoint = { t: number; v: number };   // 相对秒, MonitoredTicking
+
+export type MissionResult = {
+  index: number;
+  nodeId?: string;
+  spawnedAtEnd?: number;          // 最后一条 OnAgentCreated 的 Spawned 编号（敌人总数参考）
+  shieldDroneCount: number;       // 无人机生成数量
+  eomDurationSec?: number;        // 主机总时间：eomTime - stateStartedTime
+  lastClientDurationSec?: number; // 客机总时间：eomTime - lastClientJoinTime
+  // 游戏计时：生存内部计时器在 EOM 时刻的估算值（由相邻两个 tier 线性插值得出）
+  // 未来可扩展到其他有独立内部计时的任务类型（如中断）
+  waveCount?: number;             // 波数（防御/镜像防御）
+  roundCount?: number;            // 轮数（所有任务类型）
+  phases?: Array<{
+    kind: "wave" | "round";
+    index: number; // 1-based
+    shieldDroneCount: number;
+    partial?: boolean; // true 表示不完整的末尾轮（如生存 59:56 撤离，最后一轮不足 5 分钟）
+  }>;
+  tickingSeries?: TickingPoint[];  // 存活敌人时间序列（降采样）
+  droneSpawnTimes?: number[];     // 无人机生成事件时间戳（连续行已合并，相对 stateStartedTime，秒）
+  droneBurstSizes?: number[];    // 每次生成事件的无人机数量（与 droneSpawnTimes 一一对应）
+  phaseBoundaryTimes?: number[]; // 轮次/波次边界时间戳（相对 stateStartedTime，秒）
+  status: "ok" | "incomplete";
+};
+
+export type ParseResult = {
+  missions: MissionResult[];
+  warnings: string[];
+  validTotal?: number;
+  readComplete?: boolean;
+  readProgress01?: number;
+  readStopReason?: string;
+};
+
+// parser 只需要这两个字段来确定任务类型
+export type NodeRegionEntry = { missionType?: string; missionName?: string };
+
+export type ParseRecentValidFromFileOptions = {
+  count?: number;
+  minDurationSec?: number;
+  chunkBytes?: number;
+  // 可选：由 page.tsx 传入的 ExportRegions 数据，用于根据 NodeId 识别任务类型
+  nodeRegions?: Record<string, NodeRegionEntry>;
+};
+
+// ---- 正则 -------------------------------------------------------------------
+
+// 有些日志行在时间戳前带 "!"（例如 "!4631.303"），需要兼容
+const reTimePrefix = /^!?(\d+(?:\.\d+)?)\s+/;
+
+// 任务开始标记
+const reStartMissionName =
+  /Script \[Info\]: ThemedSquadOverlay\.lua: Mission name:\s*(.+?)\s*-\s*仲裁/;
+// 兼容 "Cached mission name=..." 格式（部分版本日志使用 = 而非 :，且带 Cached 前缀）
+const reStartCachedMissionName =
+  /Script \[Info\]: ThemedSquadOverlay\.lua: Cached mission name=(.+?)\s*-\s*仲裁/;
+const reStartMissionVote =
+  /Script \[Info\]: ThemedSquadOverlay\.lua: ShowMissionVote\s+(.+?)\s*-\s*仲裁/;
+const reVoteNodeId = /\(([A-Za-z0-9_]+)_EliteAlert\)/;
+
+// Host loading 行（提取 NodeId）
+const reHostLoading =
+  /Script \[Info\]: ThemedSquadOverlay\.lua: Host loading .*"name":"([^"]+)_EliteAlert"/;
+
+// 任务结束标记
+const reEnd =
+  /Script \[Info\]: Background\.lua: EliteAlertMission at ([A-Za-z0-9_]+)\b/;
+
+// 游戏状态机
+const reStateStarted =
+  /GameRulesImpl - changing state from SS_WAITING_FOR_PLAYERS to SS_STARTED/;
+const reStateEnding =
+  /GameRulesImpl - changing state from SS_STARTED to SS_ENDING/;
+
+// 结算 UI（EOM）——取 SS_STARTED 之后、SS_ENDING 之前最后一次出现的时间戳
+const reEomInit = /Script \[Info\]: EndOfMatch\.lua: Initialize\b/;
+const reAllExtracting = /Script \[Info\]: ExtractionTimer\.lua: EOM: All players extracting\b/;
+
+// 客机进图标记
+const reClientJoinInProgressNode =
+  /Script \[Info\]: ThemedSquadOverlay\.lua: LoadLevelMsg received\. Client joining mission in-progress:\s*\{"name":"([^"]+)_EliteAlert"\}/;
+const reSendLoadLevelNode =
+  /Net \[Info\]: Sending LOAD_LEVEL to (.+?)\s+\[mission=\{"name":"([^"]+)_EliteAlert"\}\]/;
+const reCreatePlayerForClient =
+  /Game \[Info\]: CreatePlayerForClient\. id=(\d+), user name=(.+)$/;
+
+// 敌人/无人机生成
+const reAnyOnAgentCreated = /AI \[Info\]: OnAgentCreated\b/;
+const reSpawned = /\bSpawned\s+(\d+)\b/;
+const reMonitoredTicking = /\bMonitoredTicking\s+(\d+)\b/;
+const reShieldDrone =
+  /AI \[Info\]: OnAgentCreated \/Npc\/CorpusEliteShieldDroneAgent\d*\b/;
+
+// 防御波次 / 拦截轮次 标记
+const reDefenseWave = /Script \[Info\]: WaveDefend\.lua: Defense wave:\s*(\d+)\b/;
+const reInterceptionNewRound =
+  /Script \[Info\]: HudRedux\.lua: Queuing new transmission: InterNewRoundLotusTransmission\b/;
+const reDefenseRewardTransitionOut =
+  /Script \[Info\]: DefenseReward\.lua: DefenseReward::TransitionOut\b/;
+
+// 镜像防御单波标记（与普通防御的 WaveDefend.lua 不同）
+const reLoopDefenseWave = /Script \[Info\]: LoopDefend\.lua: Loop Defense wave:\s*(\d+)\b/;
+
+// 生存轮次标记：每 5 分钟触发一次；N=轮次编号，T=生存内部计时器值（秒，与日志时间戳存在系统差）
+// 此行只出现在生存任务，见到即可确认任务类型，无需额外识别 MT_SURVIVAL
+const reSurvivalTier =
+  /Script \[Info\]: SurvivalMission\.lua: Survival: Gave reward tier (\d+) at ([\d.]+)/;
+
+// ---- 工具函数 ----------------------------------------------------------------
+
+function parseTime(line: string): number | undefined {
+  const m = line.match(reTimePrefix);
+  if (!m) return undefined;
+  const v = Number(m[1]);
+  return Number.isFinite(v) ? v : undefined;
+}
+
+// ---- 行级解析器工厂 -----------------------------------------------------------
+// 状态机与文件读取解耦：经典路径逐行喂入全部行；
+// 并行路径（大文件）只喂入扫描出的标记行（lineNo 变为喂入序号，所有用途只依赖相对顺序）。
+
+export type EeLineParser = {
+  feedLine: (line: string) => void;
+  finish: () => { missions: MissionResult[]; warnings: string[]; validTotal: number };
+};
+
+export function createEeLineParser(options?: ParseRecentValidFromFileOptions): EeLineParser {
+  const count = options?.count ?? 2;
+  const minDurationSec = options?.minDurationSec ?? 60;
+  const nodeRegions = options?.nodeRegions;
+
+  let lineNo = 0;
+
+  // ---- Run 内部状态（不导出）-------------------------------------------------
+  type Run = {
+    startLine: number;
+    endLine?: number;
+    nodeId?: string;
+    needHostLines: number;
+
+    // 状态机时间
+    stateStartedTime?: number;
+    stateStartedLine?: number;
+    stateEndingTime?: number;
+    stateEndingLine?: number;
+
+    // 结算 UI 时间（主机总时间来源）
+    eomTime?: number;
+    eomLine?: number;
+
+    // 客机进图时间
+    lastClientJoinTime?: number;
+    loadLevelSentFirstByPlayer: Record<string, number>;
+
+    // 生成统计
+    shieldDroneCount: number;
+    lastSpawned?: number;
+
+    // 波次/轮次（内部检测，不直接导出为任务类型）
+    missionKind?: "defense" | "interception" | "mirrorDefense" | "unknown";
+    phaseKind?: "wave" | "round";
+    phases: number[];
+    curPhaseIndex?: number;
+    interCompletedRounds?: number;
+    interHasTransmissionMarker?: boolean;
+    pendingDronesBeforeFirstRoundMarker: number;
+    waveCount?: number;
+    roundCount?: number;
+    // 镜像防御 LoopDefend 波次归零检测
+    loopDefendLastWave?: number;   // 上次见到的波次编号
+    loopDefendOffset?: number;     // 累计偏移（每次归零加上上次最大值）
+    // 存活敌人时间序列（降采样用）
+    tickingRaw: Array<{ t: number; v: number }>;  // 原始采集
+    tickingLastBucket: number;                     // 上一个桶的时间（秒，向下取整）
+    // 无人机生成事件（连续无人机行合并为一次事件）
+    droneTimesRaw: number[];
+    droneBurstRaw: number[];       // 每次事件包含的无人机数量（与 droneTimesRaw 一一对应）
+    lastOnAgentWasDrone: boolean;
+    // 轮次/波次边界时间戳
+    phaseBoundaryTimesRaw: number[];
+    // 生存：tier 标记的日志时间戳（用于轮次计数及丢弃 EOM 后的 tier）
+    survivalPrevTierWall?: number;     // 倒数第二个 tier 的日志时间戳
+    survivalLastTierWall?: number;     // 最后一个 tier 的日志时间戳
+  };
+
+  let cur: Run | null = null;
+  const valid: MissionResult[] = [];
+  let validTotal = 0;
+  const warnings: string[] = [];
+
+  // ---- finalize：将 Run 转为 MissionResult ------------------------------------
+  const finalize = () => {
+    if (!cur) return;
+    const run = cur;
+
+    // 主机总时间：EOM UI 触发时间 - SS_STARTED 时间
+    const eomDurationSec =
+      run.stateStartedTime != null && run.eomTime != null
+        ? run.eomTime - run.stateStartedTime
+        : undefined;
+
+    // 客机总时间：EOM UI 触发时间 - 最后客机进图时间
+    const lastClientDurationSec =
+      run.lastClientJoinTime != null && run.eomTime != null
+        ? run.eomTime - run.lastClientJoinTime
+        : undefined;
+
+    // ---- 波次/轮次 finalise --------------------------------------------------
+    if (run.missionKind === "defense") {
+      const waveCount = run.waveCount ?? (run.phases.length ? run.phases.length : undefined);
+      run.waveCount = waveCount;
+      run.roundCount = waveCount != null ? Math.ceil(waveCount / 3) : run.roundCount;
+      run.phaseKind = "wave";
+      if (waveCount != null && run.phases.length > waveCount) run.phases.length = waveCount;
+    } else if (run.missionKind === "mirrorDefense") {
+      if (run.phaseKind === "wave") {
+        // 有 LoopDefend 单波标记：waveCount 直接来自 LoopDefend 计数（归零假事件已在 feedLine 跳过）
+        if ((run.interCompletedRounds ?? 0) > 0) {
+          run.roundCount = run.interCompletedRounds;
+          // waveCount 以 LoopDefend 为准；若未记录则退而用 phases 长度
+          if (run.waveCount == null) {
+            run.waveCount = run.phases.length > 0 ? run.phases.length : undefined;
+          }
+        } else {
+          // 无 TransitionOut：用 LoopDefend 波次推算轮次
+          const waveCount = run.waveCount ?? (run.phases.length > 0 ? run.phases.length : undefined);
+          run.waveCount = waveCount;
+          run.roundCount = waveCount != null ? Math.ceil(waveCount / 2) : undefined;
+        }
+        // 裁剪 phases，确保与 waveCount 一致
+        if (run.waveCount != null && run.phases.length > run.waveCount) {
+          run.phases.length = run.waveCount;
+        }
+      } else {
+        // 无 LoopDefend 标记（旧日志）：按 TransitionOut 轮次统计，波数 = 轮数 × 2
+        run.phaseKind = "round";
+        const completed = run.interCompletedRounds ?? 0;
+        if (completed > 0) {
+          run.roundCount = completed;
+        } else if (run.roundCount == null) {
+          if (run.phases.length > 0) run.roundCount = run.phases.length;
+          else if (run.pendingDronesBeforeFirstRoundMarker > 0) run.roundCount = 1;
+        }
+        run.waveCount = run.roundCount != null ? run.roundCount * 2 : undefined;
+        if (run.roundCount != null && run.phases.length > run.roundCount) {
+          run.phases.length = run.roundCount;
+        }
+      }
+    } else if (run.missionKind === "interception") {
+      run.phaseKind = "round";
+      const completed = run.interCompletedRounds ?? 0;
+      if (completed > 0) {
+        run.roundCount = completed;
+      } else if (run.roundCount == null) {
+        if (run.phases.length > 0) run.roundCount = run.phases.length;
+        else if (run.pendingDronesBeforeFirstRoundMarker > 0) run.roundCount = 1;
+      }
+      run.waveCount = run.roundCount;
+      if (run.roundCount != null && run.phases.length > run.roundCount) {
+        run.phases.length = run.roundCount;
+      }
+    }
+
+    // 生存：丢弃在 EOM 之后才触发的 tier（如 tier 12 在 60:00，撤离在 59:56）
+    if (
+      run.survivalLastTierWall != null &&
+      run.eomTime != null &&
+      run.survivalLastTierWall > run.eomTime
+    ) {
+      run.roundCount = Math.max(0, (run.roundCount ?? 1) - 1);
+      run.survivalLastTierWall = run.survivalPrevTierWall;
+      run.survivalPrevTierWall = undefined;
+      if (run.phaseBoundaryTimesRaw.length > run.roundCount) {
+        run.phaseBoundaryTimesRaw.length = run.roundCount;
+      }
+    }
+
+    // 生存：roundCount/phaseKind 已在 feedLine 里设置，这里补 waveCount 并整理 phases
+    // missionKind 不设为 "survival"——任务类型由 page.tsx 通过 ExportRegions 判断
+    if (run.survivalLastTierWall != null && run.roundCount != null) {
+      run.waveCount = run.roundCount;
+      // 保留至多一个残缺末尾轮（phases[roundCount]），超出的直接裁掉
+      const maxLen = run.roundCount + 1;
+      if (run.phases.length > maxLen) run.phases.length = maxLen;
+      // 若末尾残缺轮没有无人机则丢弃
+      if (
+        run.phases.length === maxLen &&
+        (run.phases[run.roundCount] ?? 0) === 0
+      ) {
+        run.phases.length = run.roundCount;
+      }
+    }
+
+    const m: MissionResult = {
+      index: 0,
+      nodeId: run.nodeId,
+      spawnedAtEnd: run.lastSpawned,
+      shieldDroneCount: run.shieldDroneCount,
+      eomDurationSec:
+        eomDurationSec != null && Number.isFinite(eomDurationSec) ? eomDurationSec : undefined,
+      lastClientDurationSec:
+        lastClientDurationSec != null && Number.isFinite(lastClientDurationSec)
+          ? lastClientDurationSec
+          : undefined,
+      waveCount: run.waveCount,
+      roundCount: run.roundCount,
+      phases:
+        run.phaseKind && run.phases.length
+          ? run.phases.map((n, i) => ({
+              kind: run.phaseKind!,
+              index: i + 1,
+              shieldDroneCount: n,
+              ...(run.roundCount != null && i >= run.roundCount ? { partial: true } : {}),
+            }))
+          : undefined,
+      tickingSeries: run.tickingRaw.length > 0 ? run.tickingRaw : undefined,
+      droneSpawnTimes: run.droneTimesRaw.length > 0 ? run.droneTimesRaw : undefined,
+      droneBurstSizes: run.droneBurstRaw.length > 0 ? run.droneBurstRaw : undefined,
+      phaseBoundaryTimes: run.phaseBoundaryTimesRaw.length > 0 ? run.phaseBoundaryTimesRaw : undefined,
+      status: run.endLine != null ? "ok" : "incomplete",
+    };
+
+    const hasStarted = run.stateStartedLine != null;
+    const hasSpawnSignals = run.shieldDroneCount > 0 || run.lastSpawned != null;
+    const allowIncomplete = m.status === "incomplete" && hasStarted && hasSpawnSignals;
+    const isValid =
+      (eomDurationSec != null && eomDurationSec >= minDurationSec) || allowIncomplete;
+
+    if (isValid) {
+      validTotal++;
+      valid.push(m);
+      while (valid.length > count) valid.shift();
+    }
+    cur = null;
+  };
+
+  // ---- setNodeId：设置 NodeId 并通过 nodeRegions 确定任务类型 -----------------
+  const MIRROR_DEFENSE_MISSION_NAME = "/Lotus/Language/Missions/MissionName_DualDefense";
+  const setNodeId = (run: typeof cur & object, id: string) => {
+    run.nodeId = id;
+    if (run.missionKind === "unknown" && nodeRegions) {
+      const entry = nodeRegions[id];
+      if (entry) {
+        if (entry.missionType === "MT_DEFENSE") {
+          run.missionKind =
+            entry.missionName === MIRROR_DEFENSE_MISSION_NAME ? "mirrorDefense" : "defense";
+        } else if (entry.missionType === "MT_TERRITORY") {
+          run.missionKind = "interception";
+        }
+        // MT_SURVIVAL：由 reSurvivalTier 自我识别，不在此设置
+      }
+    }
+  };
+
+  // ---- feedLine：逐行处理 ----------------------------------------------------
+  const feedLine = (line: string) => {
+    lineNo++;
+
+    // 性能：绝大多数日志行不含任何标记，先用廉价的 includes 预筛再跑正则
+    const isScript = line.includes("Script [Info]: ");
+    const isOverlay = isScript && line.includes("ThemedSquadOverlay.lua");
+    const mStartName = isOverlay
+      ? line.match(reStartMissionName) ?? line.match(reStartCachedMissionName)
+      : null;
+    const mStartVote = isOverlay ? line.match(reStartMissionVote) : null;
+    if (mStartName || mStartVote) {
+      if (cur) {
+        if (cur.stateStartedLine == null) {
+          cur = null;
+        } else {
+          cur.endLine = cur.endLine ?? lineNo - 1;
+          finalize();
+        }
+      }
+      const voteNode = mStartVote ? line.match(reVoteNodeId) : null;
+      cur = {
+        startLine: lineNo,
+        needHostLines: 15,
+        shieldDroneCount: 0,
+        missionKind: "unknown",
+        phases: [],
+        interCompletedRounds: 0,
+        interHasTransmissionMarker: false,
+        pendingDronesBeforeFirstRoundMarker: 0,
+        loadLevelSentFirstByPlayer: {},
+        loopDefendLastWave: 0,
+        loopDefendOffset: 0,
+        tickingRaw: [],
+        tickingLastBucket: -1,
+        droneTimesRaw: [],
+        droneBurstRaw: [],
+        lastOnAgentWasDrone: false,
+        phaseBoundaryTimesRaw: [],
+      };
+      if (voteNode?.[1]) setNodeId(cur, voteNode[1]);
+      return;
+    }
+
+    if (!cur) return;
+
+    // 状态机时间
+    if (line.includes("GameRulesImpl")) {
+      if (cur.stateStartedTime == null && reStateStarted.test(line)) {
+        const t = parseTime(line);
+        if (t != null) cur.stateStartedTime = t;
+        cur.stateStartedLine = lineNo;
+      }
+      if (reStateEnding.test(line)) {
+        if (cur.stateStartedLine != null) {
+          const t = parseTime(line);
+          if (t != null) cur.stateEndingTime = t;
+          cur.stateEndingLine = lineNo;
+          cur.endLine = lineNo;
+        }
+      }
+    }
+
+    const afterEnding = cur.stateEndingLine != null && lineNo > cur.stateEndingLine;
+    const afterStarted = cur.stateStartedLine != null && lineNo >= cur.stateStartedLine;
+
+    // 补抓 NodeId
+    if (!cur.nodeId && cur.needHostLines > 0) {
+      if (line.includes("_EliteAlert")) {
+        const h = isOverlay ? line.match(reHostLoading) : null;
+        if (h?.[1]) {
+          setNodeId(cur, h[1]);
+        } else {
+          // 兼容 Cached mission name= 启动的 run：从紧跟的 ShowMissionVote 行提取 NodeId
+          const v = line.match(reVoteNodeId);
+          if (v?.[1]) setNodeId(cur, v[1]);
+        }
+      }
+      cur.needHostLines--;
+    }
+
+    // 任务结束标记（取最后一次）
+    if (cur.nodeId && isScript && line.includes("EliteAlertMission")) {
+      const e = line.match(reEnd);
+      if (e && e[1] === cur.nodeId) {
+        cur.endLine = lineNo;
+      }
+    }
+
+    if (afterEnding) return;
+
+    // EOM 结算 UI 时间（SS_STARTED ~ SS_ENDING 之间最后一次）
+    if (
+      afterStarted &&
+      isScript &&
+      (line.includes("ExtractionTimer.lua") || line.includes("EndOfMatch.lua")) &&
+      (reAllExtracting.test(line) || reEomInit.test(line))
+    ) {
+      const t = parseTime(line);
+      if (t != null) {
+        cur.eomTime = t;
+        cur.eomLine = lineNo;
+      }
+    }
+
+    // 客机进图时间（取最后一次）
+    if (afterStarted) {
+      if (isOverlay && line.includes("LoadLevelMsg")) {
+        const j = line.match(reClientJoinInProgressNode);
+        if (j && cur.nodeId && j[1] === cur.nodeId) {
+          const t = parseTime(line);
+          if (t != null) cur.lastClientJoinTime = t;
+        }
+      }
+      if (line.includes("Sending LOAD_LEVEL")) {
+        const s = line.match(reSendLoadLevelNode);
+        if (s && cur.nodeId && s[2] === cur.nodeId) {
+          const t = parseTime(line);
+          const player = s[1]?.trim();
+          if (t != null && player) {
+            if (cur.loadLevelSentFirstByPlayer[player] == null) {
+              cur.loadLevelSentFirstByPlayer[player] = t;
+            }
+            const times = Object.values(cur.loadLevelSentFirstByPlayer);
+            if (times.length > 0) cur.lastClientJoinTime = Math.max(...times);
+          }
+        }
+      }
+      if (line.includes("CreatePlayerForClient")) {
+        const cp = line.match(reCreatePlayerForClient);
+        if (cp) {
+          const pid = Number(cp[1]);
+          if (Number.isFinite(pid) && pid > 0) {
+            const t = parseTime(line);
+            if (t != null) cur.lastClientJoinTime = t;
+          }
+        }
+      }
+    }
+
+    // 防御波次 / 镜像防御波次 / 拦截轮次 / 生存 tier 标记（全部是 Script [Info] 行）
+    if (afterStarted && isScript) {
+
+      // 镜像防御：单波标记（优先于 TransitionOut）
+      if (cur.missionKind === "mirrorDefense" && line.includes("LoopDefend.lua")) {
+        const mlw = line.match(reLoopDefenseWave);
+        if (mlw) {
+          const w = Number(mlw[1]);
+          if (Number.isFinite(w) && w > 0) {
+            if ((cur.loopDefendLastWave ?? 0) > 0 && w < (cur.loopDefendLastWave ?? 0)) {
+              cur.loopDefendOffset = (cur.loopDefendOffset ?? 0) + (cur.loopDefendLastWave ?? 0) - 1;
+              cur.loopDefendLastWave = w;
+            } else {
+              cur.loopDefendLastWave = w;
+              const actualWave = (cur.loopDefendOffset ?? 0) + w;
+              cur.phaseKind = "wave";
+              cur.curPhaseIndex = actualWave;
+              cur.waveCount = actualWave;
+              while (cur.phases.length < actualWave) cur.phases.push(0);
+            }
+          }
+        }
+      }
+
+      // 普通防御：单波标记
+      if (cur.missionKind !== "mirrorDefense" && line.includes("WaveDefend.lua")) {
+        const mw = line.match(reDefenseWave);
+        if (mw) {
+          const w = Number(mw[1]);
+          if (Number.isFinite(w) && w > 0) {
+            if (cur.stateStartedTime != null) {
+              const dt = parseTime(line);
+              if (dt != null) cur.phaseBoundaryTimesRaw.push(dt - cur.stateStartedTime);
+            }
+            cur.missionKind = "defense";
+            cur.phaseKind = "wave";
+            cur.curPhaseIndex = w;
+            cur.waveCount = w;
+            while (cur.phases.length < w) cur.phases.push(0);
+          }
+        }
+      }
+
+      // 拦截：轮次播报
+      if (line.includes("InterNewRoundLotusTransmission") && reInterceptionNewRound.test(line)) {
+        if (cur.stateStartedTime != null) {
+          const dt = parseTime(line);
+          if (dt != null) cur.phaseBoundaryTimesRaw.push(dt - cur.stateStartedTime);
+        }
+        cur.missionKind = "interception";
+        cur.phaseKind = "round";
+        cur.interHasTransmissionMarker = true;
+        cur.interCompletedRounds = (cur.interCompletedRounds ?? 0) + 1;
+        cur.roundCount = cur.interCompletedRounds;
+        if (cur.interCompletedRounds === 1 && cur.pendingDronesBeforeFirstRoundMarker > 0) {
+          if (cur.phases.length < 1) cur.phases.push(0);
+          cur.phases[0] = (cur.phases[0] ?? 0) + cur.pendingDronesBeforeFirstRoundMarker;
+          cur.pendingDronesBeforeFirstRoundMarker = 0;
+        }
+        cur.curPhaseIndex = cur.interCompletedRounds + 1;
+      } else if (line.includes("DefenseReward") && reDefenseRewardTransitionOut.test(line)) {
+        if (cur.missionKind === "mirrorDefense") {
+          cur.interCompletedRounds = (cur.interCompletedRounds ?? 0) + 1;
+          cur.roundCount = cur.interCompletedRounds;
+          if (cur.phaseKind !== "wave") {
+            // round-type mirrorDefense: push boundary (wave-type already handled by reLoopDefenseWave)
+            if (cur.stateStartedTime != null) {
+              const dt = parseTime(line);
+              if (dt != null) cur.phaseBoundaryTimesRaw.push(dt - cur.stateStartedTime);
+            }
+            cur.phaseKind = "round";
+            if (cur.interCompletedRounds === 1 && cur.pendingDronesBeforeFirstRoundMarker > 0) {
+              if (cur.phases.length < 1) cur.phases.push(0);
+              cur.phases[0] = (cur.phases[0] ?? 0) + cur.pendingDronesBeforeFirstRoundMarker;
+              cur.pendingDronesBeforeFirstRoundMarker = 0;
+            }
+            cur.curPhaseIndex = cur.interCompletedRounds + 1;
+          }
+          // wave-type mirrorDefense: skip push (reLoopDefenseWave already pushed it)
+        } else if (cur.missionKind !== "defense" && cur.interHasTransmissionMarker !== true) {
+          // interception without transmission marker: push boundary
+          if (cur.stateStartedTime != null) {
+            const dt = parseTime(line);
+            if (dt != null) cur.phaseBoundaryTimesRaw.push(dt - cur.stateStartedTime);
+          }
+          cur.missionKind = "interception";
+          cur.phaseKind = "round";
+          cur.interCompletedRounds = (cur.interCompletedRounds ?? 0) + 1;
+          cur.roundCount = cur.interCompletedRounds;
+          if (cur.interCompletedRounds === 1 && cur.pendingDronesBeforeFirstRoundMarker > 0) {
+            if (cur.phases.length < 1) cur.phases.push(0);
+            cur.phases[0] = (cur.phases[0] ?? 0) + cur.pendingDronesBeforeFirstRoundMarker;
+            cur.pendingDronesBeforeFirstRoundMarker = 0;
+          }
+          cur.curPhaseIndex = cur.interCompletedRounds + 1;
+        }
+        // defense mission: skip push (reDefenseWave already pushed it)
+      }
+
+      // 生存：每 5 分钟奖励轮标记
+      // 此行只出现在生存任务，见到即自动确认任务类型
+      if (line.includes("SurvivalMission.lua")) {
+        const ms = line.match(reSurvivalTier);
+        if (ms) {
+          const n = Number(ms[1]);
+          const internalT = Number(ms[2]);
+          if (Number.isFinite(n) && n > 0 && Number.isFinite(internalT)) {
+            const wallT = parseTime(line);
+              if (wallT != null) {
+              // 记录轮次编号（最后一个即为完成轮次数）
+              cur.roundCount = n;
+              cur.phaseKind = "round";
+              // 第一个 tier 触发时，把之前积累的待定无人机归入第 1 轮
+              if (n === 1 && cur.pendingDronesBeforeFirstRoundMarker > 0) {
+                if (cur.phases.length < 1) cur.phases.push(0);
+                cur.phases[0] = (cur.phases[0] ?? 0) + cur.pendingDronesBeforeFirstRoundMarker;
+                cur.pendingDronesBeforeFirstRoundMarker = 0;
+              }
+              // 确保 phases 槽位足够（phases[0..n-1]）
+              while (cur.phases.length < n) cur.phases.push(0);
+              // tier N 触发后，下一轮（N+1）的无人机计入 phases[N]
+              cur.curPhaseIndex = n + 1;
+              // 记录边界时间（相对 SS_STARTED）
+              if (cur.stateStartedTime != null) {
+                cur.phaseBoundaryTimesRaw.push(wallT - cur.stateStartedTime);
+              }
+              // 保留最近两个 tier 时间点（丢弃 EOM 后 tier 时回退用）
+              cur.survivalPrevTierWall = cur.survivalLastTierWall;
+              cur.survivalLastTierWall = wallT;
+            }
+          }
+        }
+      }
+    }
+
+    // 无人机 & 敌人生成统计（SS_STARTED 之后才计入）
+    const isAgentCreated = afterStarted && line.includes("OnAgentCreated");
+    const isShieldDrone = isAgentCreated && reShieldDrone.test(line);
+    if (isShieldDrone) {
+      cur.shieldDroneCount++;
+      if (cur.stateStartedTime != null) {
+        if (!cur.lastOnAgentWasDrone) {
+          // 新事件：记录时间戳 + burst 计数 1
+          const dt = parseTime(line);
+          if (dt != null) {
+            cur.droneTimesRaw.push(dt - cur.stateStartedTime);
+            cur.droneBurstRaw.push(1);
+          }
+        } else if (cur.droneBurstRaw.length > 0) {
+          // 连续无人机行：递增当前事件的 burst 计数
+          cur.droneBurstRaw[cur.droneBurstRaw.length - 1]!++;
+        }
+      }
+      cur.lastOnAgentWasDrone = true;
+      if (cur.phaseKind && cur.curPhaseIndex != null && cur.curPhaseIndex > 0) {
+        const idx0 = cur.curPhaseIndex - 1;
+        while (cur.phases.length <= idx0) cur.phases.push(0);
+        cur.phases[idx0] = (cur.phases[idx0] ?? 0) + 1;
+      } else if (cur.missionKind !== "defense" && cur.missionKind !== "mirrorDefense") {
+        // 拦截：在第一个轮次边界前的无人机暂存
+        cur.pendingDronesBeforeFirstRoundMarker++;
+      }
+    }
+
+    if (isAgentCreated && reAnyOnAgentCreated.test(line)) {
+      if (!isShieldDrone) cur.lastOnAgentWasDrone = false;
+      const sm = line.match(reSpawned);
+      if (sm) {
+        const n = Number(sm[1]);
+        if (Number.isFinite(n)) cur.lastSpawned = n;
+      }
+      // 采集 MonitoredTicking（每秒桶内取最大值，降采样）
+      const mt = line.match(reMonitoredTicking);
+      const t = parseTime(line);
+      if (mt && t != null && cur.stateStartedTime != null) {
+        const relT = t - cur.stateStartedTime;
+        const v = Number(mt[1]);
+        const bucket = Math.floor(relT);
+        if (bucket > cur.tickingLastBucket) {
+          cur.tickingRaw.push({ t: relT, v });
+          cur.tickingLastBucket = bucket;
+        } else if (cur.tickingRaw.length > 0) {
+          const last = cur.tickingRaw[cur.tickingRaw.length - 1]!;
+          if (v > last.v) last.v = v;
+        }
+      }
+    }
+  };
+
+  const finish = () => {
+    finalize();
+    const missions = valid.map((m, idx) => ({ ...m, index: idx + 1 }));
+    if (missions.length < count) {
+      warnings.push(`有效记录不足：仅找到 ${missions.length} 次（过滤阈值 ${minDurationSec}s）。`);
+    }
+    return { missions, warnings, validTotal };
+  };
+
+  return { feedLine, finish };
+}
+
+// ---- 流式解析（主要入口）-----------------------------------------------------
+
+/**
+ * 流式读取 EE.log 文件，解析最近有效的 N 次仲裁任务。
+ * - 以 4MB 块逐步读取，避免大文件 OOM
+ * - 默认取最近 2 次有效任务，排除时长 < 60s 的记录
+ */
+export async function parseRecentValidEeLogFromFile(
+  file: File,
+  options?: ParseRecentValidFromFileOptions,
+  onProgress?: (progress01: number) => void
+): Promise<ParseResult> {
+  const chunkBytes = options?.chunkBytes ?? 4 * 1024 * 1024;
+  const parser = createEeLineParser(options);
+
+  const decoder = new TextDecoder("utf-8");
+  let carry = "";
+  let offset = 0;
+  let readComplete = true;
+  let readProgress01: number | undefined = undefined;
+  let readStopReason: string | undefined = undefined;
+  const readWarnings: string[] = [];
+
+  while (offset < file.size) {
+    const end = Math.min(file.size, offset + chunkBytes);
+    let buf: ArrayBuffer;
+    try {
+      buf = await file.slice(offset, end).arrayBuffer();
+    } catch {
+      readComplete = false;
+      readProgress01 = file.size ? offset / file.size : 0;
+      readStopReason = `读取失败：offset=${offset}, end=${end}（可能文件正在被占用/写入）`;
+      readWarnings.push(`${readStopReason}。已返回当前已解析结果。`);
+      break;
+    }
+    const text = decoder.decode(buf, { stream: true });
+    const combined = carry + text;
+    const parts = combined.split("\n");
+    carry = parts.pop() ?? "";
+    for (let line of parts) {
+      // 去掉行尾 \r（split("\n") 比正则 split(/\r?\n/) 快得多）
+      if (line.length > 0 && line.charCodeAt(line.length - 1) === 13) line = line.slice(0, -1);
+      parser.feedLine(line);
+    }
+    offset = end;
+    if (onProgress) onProgress(file.size ? offset / file.size : 1);
+  }
+
+  const tail = carry + decoder.decode();
+  if (tail.trim()) parser.feedLine(tail);
+
+  const { missions, warnings, validTotal } = parser.finish();
+  return {
+    missions,
+    warnings: [...readWarnings, ...warnings],
+    validTotal,
+    readComplete,
+    readProgress01: readComplete ? 1 : readProgress01,
+    readStopReason,
+  };
+}
