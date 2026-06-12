@@ -269,89 +269,67 @@
   flex-shrink: 0; position: relative; overflow: hidden;
 }
 
-/* F — no effect (default = light) */
-.arb-log .gradeF { color: #a1a1aa; background: #f4f4f5; border: 1.5px solid #d4d4d8; }
-.arb-log .gradeF { color: rgba(255,255,255,.28); background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.10); }
+/* 配色与仲裁队列等级表对齐：金 > 红 > 绿 > 蓝 > 灰（见 page.tsx TIER_STYLES） */
 
-/* A- — static glow (default = light) */
+/* F — 灰 */
+.arb-log .gradeF {
+  color: rgba(255,255,255,.5);
+  background: rgba(255,255,255,.10);
+  border: 1.5px solid rgba(255,255,255,.22);
+}
+
+/* A- — 天蓝（静态微光） */
 .arb-log .gradeAMinus {
-  color:#15803d; background:#f0fdf4; border: 1.5px solid #bbf7d0;
-  box-shadow: 0 0 0 3px rgba(21,128,61,.07), 0 4px 12px rgba(21,128,61,.15);
-}
-.arb-log .gradeAMinus {
-  color: #4ade80; background: rgba(74,222,128,.08); border-color: rgba(74,222,128,.25);
-  box-shadow: 0 0 18px rgba(74,222,128,.15);
+  color: #fff;
+  background: linear-gradient(145deg, #38bdf8, #3b82f6);
+  border: 1.5px solid rgba(125,211,252,.55);
+  box-shadow: 0 2px 12px rgba(56,189,248,.5);
 }
 
-/* A — slow breathing glow (default = light) */
+/* A — 极光绿（呼吸光） */
 .arb-log .gradeA {
-  color:#1d4ed8; background:#eff6ff; border: 1.5px solid #93c5fd;
-  box-shadow: 0 0 0 3px rgba(29,78,216,.07), 0 4px 14px rgba(29,78,216,.18);
-  animation: aBreathL 3.5s ease-in-out infinite;
-}
-.arb-log .gradeA {
-  color: #38bdf8; background: rgba(56,189,248,.08); border-color: rgba(56,189,248,.28);
-  box-shadow: 0 0 22px rgba(56,189,248,.18); animation: aBreath 3.5s ease-in-out infinite;
-}
-
-@keyframes aBreathL {
-  0%,100% { box-shadow: 0 0 0 3px rgba(29,78,216,.07),0 4px 14px rgba(29,78,216,.16); }
-  50%     { box-shadow: 0 0 0 5px rgba(29,78,216,.12),0 6px 22px rgba(29,78,216,.30); }
+  color: #fff;
+  background: linear-gradient(145deg, #4ade80, #34d399, #06b6d4);
+  border: 1.5px solid rgba(110,231,183,.55);
+  box-shadow: 0 2px 14px rgba(34,211,238,.5);
+  animation: aBreath 3.5s ease-in-out infinite;
 }
 @keyframes aBreath {
-  0%,100% { box-shadow: 0 0 22px rgba(56,189,248,.16); }
-  50%     { box-shadow: 0 0 36px rgba(56,189,248,.34); }
+  0%,100% { box-shadow: 0 2px 14px rgba(34,211,238,.4); }
+  50%     { box-shadow: 0 2px 26px rgba(34,211,238,.8); }
 }
 
-/* A+ — pulse + scale (default = light) */
+/* A+ — 玫红（脉冲 + 缩放） */
 .arb-log .gradeAPlus {
-  color:#6d28d9; background:linear-gradient(145deg,#f5f3ff,#ede9fe); border: 1.5px solid #c4b5fd;
-  box-shadow: 0 0 0 4px rgba(109,40,217,.08), 0 4px 18px rgba(109,40,217,.22);
-  animation: aplusL 2.2s ease-in-out infinite;
-}
-.arb-log .gradeAPlus {
-  color: #c084fc; background: rgba(192,132,252,.10); border-color: rgba(192,132,252,.32);
-  box-shadow: 0 0 28px rgba(192,132,252,.22); animation: aplus 2.2s ease-in-out infinite;
-}
-
-@keyframes aplusL {
-  0%,100% { box-shadow:0 0 0 4px rgba(109,40,217,.07),0 4px 18px rgba(109,40,217,.20);transform:scale(1); }
-  50%     { box-shadow:0 0 0 6px rgba(109,40,217,.14),0 6px 28px rgba(109,40,217,.36);transform:scale(1.04); }
+  color: #fff;
+  background: linear-gradient(145deg, #f43f5e, #dc2626);
+  border: 1.5px solid rgba(251,113,133,.6);
+  box-shadow: 0 2px 12px rgba(244,63,94,.55);
+  animation: aplus 2.2s ease-in-out infinite;
 }
 @keyframes aplus {
-  0%,100% { box-shadow: 0 0 28px rgba(192,132,252,.20); transform: scale(1); }
-  50%     { box-shadow: 0 0 44px rgba(192,132,252,.42); transform: scale(1.04); }
+  0%,100% { box-shadow: 0 2px 12px rgba(244,63,94,.45); transform: scale(1); }
+  50%     { box-shadow: 0 2px 26px rgba(244,63,94,.85); transform: scale(1.04); }
 }
 
-/* S — intense pulse + shimmer sweep (default = light) */
+/* S — 传说金（强脉冲 + 扫光，与队列页 tier-s 同源） */
 .arb-log .gradeS {
-  color: #92400e;
-  background: linear-gradient(135deg, #fefce8, #fde68a);
+  color: #451a03;
+  background: linear-gradient(135deg, #fde047, #fbbf24, #f59e0b);
   border: 2px solid #fbbf24;
-  box-shadow: 0 0 0 4px rgba(217,119,6,.10), 0 4px 20px rgba(217,119,6,.28);
-  animation: sGlowL 1.6s ease-in-out infinite;
-}
-.arb-log .gradeS {
-  color: #fde68a;
-  background: linear-gradient(135deg, rgba(245,158,11,.18), rgba(251,191,36,.08));
-  border-color: rgba(251,191,36,.44);
-  box-shadow: 0 0 0 4px rgba(245,158,11,.08), 0 0 36px rgba(245,158,11,.34);
+  box-shadow: 0 2px 20px rgba(251,191,36,.6);
   animation: sGlow 1.6s ease-in-out infinite;
 }
 
 .arb-log .gradeS::before {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(105deg, transparent 35%, rgba(255,252,180,.55) 50%, transparent 65%);
+  background: linear-gradient(105deg, transparent 35%, rgba(255,252,180,.65) 50%, transparent 65%);
   animation: sSweep 1.9s linear infinite;
 }
 
-@keyframes sGlowL {
-  0%,100% { box-shadow: 0 0 0 4px rgba(217,119,6,.09), 0 4px 20px rgba(217,119,6,.26); }
-  50%     { box-shadow: 0 0 0 7px rgba(217,119,6,.17), 0 6px 32px rgba(217,119,6,.48); }
-}
 @keyframes sGlow {
-  0%,100% { box-shadow: 0 0 0 4px rgba(245,158,11,.08), 0 0 36px rgba(245,158,11,.32); }
-  50%     { box-shadow: 0 0 0 7px rgba(245,158,11,.16), 0 0 56px rgba(245,158,11,.56); }
+  0%,100% { box-shadow: 0 2px 16px rgba(251,191,36,.45); }
+  50%     { box-shadow: 0 2px 32px rgba(251,191,36,.85); }
 }
 @keyframes sSweep { 0%{transform:translateX(-160%)} 100%{transform:translateX(260%)} }
 
