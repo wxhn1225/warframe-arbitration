@@ -324,6 +324,8 @@ export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const isMobile = useSyncExternalStore(subscribeMobile, getIsMobile, getServerFalse);
   const isDevMode = useSyncExternalStore(subscribeNoop, getIsDevMode, getServerFalse);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const confirmResetTimer = useRef<number | null>(null);
 
   const scheduleTopRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -615,8 +617,13 @@ export default function Home() {
     setTierlist({ ...tierlist, tierBuckets: nextBuckets });
   }
 
+  // 两步确认：第一次点进入确认态（3 秒后自动还原），再点一次才真正恢复。
+  // 不用 window.confirm——原生模态弹窗会阻塞主线程，部分环境下表现为页面卡死
   function resetToDefault() {
-    if (!window.confirm("确定恢复默认等级表吗？\n你的自定义等级调整将被清除，页面会刷新。")) {
+    if (!confirmReset) {
+      setConfirmReset(true);
+      if (confirmResetTimer.current) window.clearTimeout(confirmResetTimer.current);
+      confirmResetTimer.current = window.setTimeout(() => setConfirmReset(false), 3000);
       return;
     }
     localStorage.removeItem(STORAGE_KEY);
@@ -845,22 +852,6 @@ export default function Home() {
             >
               清空筛选
             </button>
-            <button
-              className={`shrink-0 ${GHOST_BTN}`}
-              onClick={resetToDefault}
-              title="清空本地保存的等级表，恢复默认"
-            >
-              默认等级
-            </button>
-            {isDevMode && (
-              <button
-                className={`shrink-0 ${GHOST_BTN}`}
-                onClick={exportTierlistJson}
-                title="导出当前等级表 JSON（可发给开发者更新默认值）"
-              >
-                导出等级表
-              </button>
-            )}
           </div>
 
           {/* 一体化搜索条：三个下拉 + 关键词收进同一块玻璃，分段式布局 */}
@@ -1201,8 +1192,29 @@ export default function Home() {
           )}
         </section>
 
-        <footer className="pb-2 pt-1 text-center text-xs text-white/55">
-          整点轮换 · 等级表保存在本地浏览器，可随时恢复默认
+        <footer className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pb-2 pt-1 text-xs text-white/55">
+          <span>整点轮换 · 等级表保存在本地浏览器</span>
+          <button
+            className={[
+              "rounded-md px-1 underline decoration-white/30 underline-offset-2 transition",
+              confirmReset
+                ? "font-semibold text-amber-300 decoration-amber-300/60"
+                : "text-white/45 hover:text-white/85",
+            ].join(" ")}
+            onClick={resetToDefault}
+            title="清空本地保存的等级表，恢复默认"
+          >
+            {confirmReset ? "再点一次确认恢复" : "恢复默认等级"}
+          </button>
+          {isDevMode && (
+            <button
+              className="rounded-md px-1 text-white/45 underline decoration-white/30 underline-offset-2 transition hover:text-white/85"
+              onClick={exportTierlistJson}
+              title="导出当前等级表 JSON（可发给开发者更新默认值）"
+            >
+              导出等级表
+            </button>
+          )}
         </footer>
       </main>
 
