@@ -154,6 +154,26 @@
 }
 @media (max-width:700px) { .arb-log .helpLine { flex-direction: column; align-items: flex-start; } }
 
+/* 路径一键复制 */
+.arb-log .copyPath {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: 2px; padding: 3px 9px;
+  border-radius: 8px; border: 1px solid var(--border2);
+  background: var(--btn-bg); color: var(--text2);
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  white-space: nowrap; cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.arb-log .copyPath code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+}
+.arb-log .copyPath:hover {
+  border-color: var(--ink-border);
+  background: var(--ink-bg);
+  color: var(--ink-text);
+}
+
 /* ═══════════════════════════════════════════════════════════
    Top bar / actions
 ═══════════════════════════════════════════════════════════ */

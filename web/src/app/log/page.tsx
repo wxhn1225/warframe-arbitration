@@ -79,13 +79,22 @@ async function paintGlassBackdrop(ctx: CanvasRenderingContext2D, w: number, h: n
 export default function Page() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const lastFileRef = useRef<File | null>(null);
-  const runRefs = useRef<Array<HTMLDivElement | null>>([]);
   const captureRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [copyingIdx, setCopyingIdx] = useState<number | null>(null);
   const [satPctMode, setSatPctMode] = useState<"total" | "active">("active");
   const [detailState, setDetailState] = useState<{ m: MissionResult; idx: number } | null>(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
+  const [eePathCopied, setEePathCopied] = useState(false);
+  const copyEePath = async () => {
+    try {
+      await navigator.clipboard.writeText("%LOCALAPPDATA%\\Warframe");
+      setEePathCopied(true);
+      setTimeout(() => setEePathCopied(false), 1500);
+    } catch {
+      // 剪贴板不可用时忽略（http 或旧浏览器）
+    }
+  };
   const [parse, setParse] = useState<ParseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [regions, setRegions] = useState<Record<string, RegionInfo> | null>(null);
@@ -149,7 +158,6 @@ export default function Page() {
   // 页面加载后预取节点数据，把网络延迟藏在用户上传文件之前
   useEffect(() => {
     void ensureWarframeData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const nodeInfoLine = (m: MissionResult) => {
@@ -261,6 +269,9 @@ export default function Page() {
   }, []);
 
   // ── RunCard 稳定回调（配合 React.memo 避免整列表重渲染）──
+  const handleCaptureRef = useCallback((idx: number, el: HTMLDivElement | null) => {
+    captureRefs.current[idx] = el;
+  }, []);
   const handleTimeModeChange = useCallback((idx: number, mode: TimeMode) => {
     setTimeModeByIdx((s) => ({ ...s, [idx]: mode }));
   }, []);
@@ -345,7 +356,18 @@ export default function Page() {
         </div>
 
         <div className="helpLine">
-          <span>EE.log 路径：%LOCALAPPDATA%\Warframe</span>
+          <span>
+            EE.log 路径：
+            <button
+              type="button"
+              className="copyPath"
+              onClick={copyEePath}
+              title="复制路径"
+            >
+              <code>%LOCALAPPDATA%\Warframe</code>
+              <span aria-hidden>{eePathCopied ? "✓ 已复制" : "⧉"}</span>
+            </button>
+          </span>
           <span>时长 &lt; 1 分钟自动排除</span>
         </div>
 
@@ -463,8 +485,7 @@ export default function Page() {
                 actualText={actualEssenceByIdx[idx] ?? ""}
                 satPctMode={satPctMode}
                 copying={copyingIdx === idx}
-                runRefs={runRefs}
-                captureRefs={captureRefs}
+                onCaptureRef={handleCaptureRef}
                 onTimeModeChange={handleTimeModeChange}
                 onManualChange={handleManualChange}
                 onActualChange={handleActualChange}
