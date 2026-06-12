@@ -70,47 +70,57 @@ function tierZh(tier: string) {
 
 type TierStyle = {
   chip: string;
-  bar: string;
+  /** 行左侧的霓虹光束（发光能量条） */
+  beam: string;
+  /** 行 hover 时从左侧扫入的等级色光 */
+  glow: string;
   strip: string;
 };
 
-// 玻璃面板上的等级配色：金 > 红 > 绿 > 蓝 > 紫 > 灰，等级差异一眼可辨
+// 等级视觉语言：行不再整体染色，改为「霓虹光束 + hover 扫光」，S 级额外有流光与呼吸
 const TIER_STYLES: Record<string, TierStyle> = {
-  // S = 传说金：渐变 + 呼吸微光 + ✦ 角标（tier-s 见 globals.css）
+  // S = 传说金：渐变 + 呼吸微光 + ✦ 角标（tier-s / row-s 见 globals.css）
   S: {
     chip: "tier-s relative bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-500 text-amber-950",
-    bar: "border-l-amber-300 bg-gradient-to-r from-amber-400/35 via-yellow-400/14 to-transparent",
+    beam: "bg-gradient-to-b from-yellow-300 to-amber-500 shadow-[0_0_14px_2px_rgba(251,191,36,0.65)] animate-[s-breathe_2.6s_ease-in-out_infinite]",
+    glow: "bg-gradient-to-r from-amber-400/30 via-amber-300/10 to-transparent",
     strip: "bg-gradient-to-r from-yellow-300 to-amber-500",
   },
   "A+": {
     chip: "bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-[0_2px_12px_rgba(244,63,94,0.55)]",
-    bar: "border-l-rose-400 bg-gradient-to-r from-rose-500/30 via-rose-500/12 to-transparent",
+    beam: "bg-gradient-to-b from-rose-400 to-red-600 shadow-[0_0_12px_1px_rgba(244,63,94,0.6)]",
+    glow: "bg-gradient-to-r from-rose-500/25 via-rose-500/8 to-transparent",
     strip: "bg-gradient-to-r from-rose-500 to-red-600",
   },
-  // A 用「霓虹薄荷」：高亮电光薄荷绿，深色字压底，外圈薄荷光晕
+  // A 用「极光绿」：翠绿 -> 青 -> 蓝青的大跨度渐变，像夜空极光
   A: {
-    chip: "bg-gradient-to-br from-teal-300 to-emerald-400 text-emerald-950 shadow-[0_2px_14px_rgba(94,234,212,0.65)]",
-    bar: "border-l-teal-300 bg-gradient-to-r from-teal-300/30 via-emerald-400/12 to-transparent",
-    strip: "bg-gradient-to-r from-teal-300 to-emerald-400",
+    chip: "bg-gradient-to-br from-green-400 via-emerald-400 to-cyan-500 text-white shadow-[0_2px_14px_rgba(34,211,238,0.55)]",
+    beam: "bg-gradient-to-b from-green-400 via-emerald-400 to-cyan-500 shadow-[0_0_12px_1px_rgba(52,211,153,0.6)]",
+    glow: "bg-gradient-to-r from-emerald-400/25 via-cyan-500/8 to-transparent",
+    strip: "bg-gradient-to-r from-green-400 via-emerald-400 to-cyan-500",
   },
   "A-": {
     chip: "bg-gradient-to-br from-sky-400 to-blue-500 text-white shadow-[0_2px_12px_rgba(56,189,248,0.5)]",
-    bar: "border-l-sky-400 bg-gradient-to-r from-sky-500/28 via-sky-500/12 to-transparent",
+    beam: "bg-gradient-to-b from-sky-400 to-blue-500 shadow-[0_0_12px_1px_rgba(56,189,248,0.55)]",
+    glow: "bg-gradient-to-r from-sky-500/25 via-sky-500/8 to-transparent",
     strip: "bg-gradient-to-r from-sky-400 to-blue-500",
   },
   B: {
     chip: "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_2px_12px_rgba(139,92,246,0.55)]",
-    bar: "border-l-violet-400 bg-gradient-to-r from-violet-500/30 via-violet-500/12 to-transparent",
+    beam: "bg-gradient-to-b from-violet-500 to-purple-600 shadow-[0_0_12px_1px_rgba(139,92,246,0.55)]",
+    glow: "bg-gradient-to-r from-violet-500/25 via-violet-500/8 to-transparent",
     strip: "bg-gradient-to-r from-violet-500 to-purple-600",
   },
   C: {
     chip: "bg-slate-500 text-white shadow-[0_2px_12px_rgba(100,116,139,0.45)]",
-    bar: "border-l-slate-400 bg-gradient-to-r from-slate-500/25 via-slate-500/10 to-transparent",
+    beam: "bg-slate-400 shadow-[0_0_8px_0_rgba(148,163,184,0.4)]",
+    glow: "bg-gradient-to-r from-slate-400/18 via-slate-400/6 to-transparent",
     strip: "bg-slate-500",
   },
   unrated: {
     chip: "bg-white/15 text-white/75 ring-1 ring-inset ring-white/25",
-    bar: "border-l-white/30 bg-white/[0.05]",
+    beam: "bg-white/25",
+    glow: "bg-white/[0.05]",
     strip: "bg-white/30",
   },
 };
@@ -1186,10 +1196,17 @@ export default function Home() {
                           return (
                             <div
                               className={[
-                                "mb-2 rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md",
-                                tierStyle(tier).bar,
+                                "relative mb-2 overflow-hidden rounded-xl border border-white/15 bg-white/[0.07] p-3.5 pl-5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md",
+                                tier === "S" ? "row-s" : "",
                               ].join(" ")}
                             >
+                              <span
+                                aria-hidden
+                                className={[
+                                  "absolute bottom-2 left-1.5 top-2 w-1 rounded-full",
+                                  tierStyle(tier).beam,
+                                ].join(" ")}
+                              />
                               <div className="flex items-start justify-between gap-2">
                                 <div className="font-mono text-base font-semibold tabular-nums text-white">
                                   {hhmm(ts)}
@@ -1267,10 +1284,24 @@ export default function Home() {
                             return (
                               <div
                                 className={[
-                                  "grid grid-cols-12 items-center gap-2 border-b border-white/10 border-l-4 px-5 py-3 transition hover:brightness-125",
-                                  tierStyle(tier).bar,
+                                  "group relative grid grid-cols-12 items-center gap-2 overflow-hidden border-b border-white/10 py-3 pl-6 pr-5 transition-colors hover:bg-white/[0.05]",
+                                  tier === "S" ? "row-s" : "",
                                 ].join(" ")}
                               >
+                                <span
+                                  aria-hidden
+                                  className={[
+                                    "absolute bottom-1.5 left-1.5 top-1.5 w-1 rounded-full",
+                                    tierStyle(tier).beam,
+                                  ].join(" ")}
+                                />
+                                <span
+                                  aria-hidden
+                                  className={[
+                                    "pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100",
+                                    tierStyle(tier).glow,
+                                  ].join(" ")}
+                                />
                                 <div className="col-span-2 font-mono tabular-nums text-white/80">
                                   {hhmm(ts)}
                                 </div>
@@ -1343,10 +1374,17 @@ export default function Home() {
                                 <div
                                   key={nodeKey}
                                   className={[
-                                    "rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition hover:brightness-125",
-                                    tierStyle(nodeTier).bar,
+                                    "relative overflow-hidden rounded-xl border border-white/15 bg-white/[0.06] p-3.5 pl-5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition hover:bg-white/[0.1]",
+                                    nodeTier === "S" ? "row-s" : "",
                                   ].join(" ")}
                                 >
+                                  <span
+                                    aria-hidden
+                                    className={[
+                                      "absolute bottom-2 left-1.5 top-2 w-1 rounded-full",
+                                      tierStyle(nodeTier).beam,
+                                    ].join(" ")}
+                                  />
                                   <div className="text-sm font-semibold text-white/90">
                                     {text}
                                   </div>

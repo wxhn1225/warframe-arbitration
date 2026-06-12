@@ -104,6 +104,40 @@ body {
   }
 }
 
+/* S 级行：缓慢扫过的金色流光 */
+.row-s::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 32%,
+    rgba(253, 230, 138, 0.1) 45%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(253, 230, 138, 0.1) 55%,
+    transparent 68%
+  );
+  background-size: 250% 100%;
+  background-position: 0% 0;
+  animation: row-s-sheen 6s ease-in-out infinite;
+}
+@keyframes row-s-sheen {
+  0% {
+    background-position: 0% 0;
+  }
+  60%,
+  100% {
+    background-position: 100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .row-s::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* 下拉弹层：更实的深玻璃，保证列表可读 */
 .glass-menu {
   background: rgba(22, 24, 38, 0.92);
