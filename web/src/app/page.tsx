@@ -947,7 +947,7 @@ export default function Home() {
               </div>
 
               {flatItems.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/25 bg-white/5 py-16 text-center text-white/60 backdrop-blur-sm">
+                <div className="rounded-2xl border border-dashed border-white/25 bg-white/5 py-16 text-center text-white/60">
                   没有符合当前筛选条件的仲裁
                 </div>
               ) : null}
@@ -988,7 +988,7 @@ export default function Home() {
                           return (
                             <div
                               className={[
-                                "mb-2 rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md",
+                                "mb-2 rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] bg-white/[0.04]",
                                 tierStyle(tier).bar,
                               ].join(" ")}
                             >
@@ -1028,7 +1028,7 @@ export default function Home() {
 
               {/* 桌面/平板：虚拟滚动表格 */}
               {!isMobile && flatItems.length > 0 && (
-                <div className="overflow-hidden rounded-2xl border border-white/20 bg-white/[0.06] backdrop-blur-md">
+                <div className="overflow-hidden rounded-2xl border border-white/20 bg-white/[0.06]">
                   <div className="grid grid-cols-12 gap-2 border-b border-white/15 bg-white/10 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white/55">
                     <div className="col-span-2">时间</div>
                     <div className="col-span-7">任务</div>
@@ -1055,7 +1055,7 @@ export default function Home() {
                           }}
                         >
                           {item.type === "day" ? (
-                            <div className="flex items-center gap-3 border-b border-white/15 bg-white/10 px-5 py-3 backdrop-blur-sm">
+                            <div className="flex items-center gap-3 border-b border-white/15 bg-white/10 px-5 py-3">
                               <span className="inline-block h-1.5 w-1.5 rotate-45 bg-gradient-to-br from-sky-500 to-violet-500" />
                               <span className="text-sm font-bold tracking-wide text-white/90">
                                 {item.day}
@@ -1069,7 +1069,7 @@ export default function Home() {
                             return (
                               <div
                                 className={[
-                                  "grid grid-cols-12 items-center gap-2 border-b border-white/10 border-l-4 px-5 py-3 transition hover:brightness-125",
+                                  "grid grid-cols-12 items-center gap-2 border-b border-white/10 border-l-4 px-5 py-3 transition-colors hover:bg-white/[0.07]",
                                   tierStyle(tier).bar,
                                 ].join(" ")}
                               >
@@ -1120,7 +1120,7 @@ export default function Home() {
                     return (
                       <div
                         key={tier}
-                        className="overflow-hidden rounded-2xl border border-white/20 bg-white/[0.06] backdrop-blur-md"
+                        className="overflow-hidden rounded-2xl border border-white/20 bg-white/[0.06]"
                       >
                         <div className={["h-1 w-full", tierStyle(tier).strip].join(" ")} />
                         <div className="flex items-center justify-between border-b border-white/15 bg-white/5 px-4 py-3">
@@ -1145,7 +1145,7 @@ export default function Home() {
                                 <div
                                   key={nodeKey}
                                   className={[
-                                    "rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition hover:brightness-125",
+                                    "rounded-xl border border-white/15 border-l-4 p-3.5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition-colors hover:bg-white/[0.07]",
                                     tierStyle(nodeTier).bar,
                                   ].join(" ")}
                                 >
