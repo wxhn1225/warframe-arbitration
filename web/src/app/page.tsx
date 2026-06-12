@@ -74,28 +74,28 @@ type TierStyle = {
   strip: string;
 };
 
-// 玻璃面板上的等级配色：实心彩色徽章 + 整行渐变着色，等级差异一眼可辨
+// 玻璃面板上的等级配色：游戏稀有度阶梯（金 > 红 > 紫 > 蓝 > 绿 > 灰），等级差异一眼可辨
 const TIER_STYLES: Record<string, TierStyle> = {
-  // S 用紫红渐变，和 A 系暖色彻底拉开；A+/A/A- 形成 红->橙->黄 的强度阶梯
+  // S = 传说金：渐变 + 呼吸微光 + ✦ 角标（tier-s 见 globals.css）
   S: {
-    chip: "bg-gradient-to-br from-fuchsia-500 to-violet-600 text-white shadow-[0_2px_12px_rgba(192,38,211,0.6)]",
-    bar: "border-l-fuchsia-400 bg-gradient-to-r from-fuchsia-500/35 via-violet-500/15 to-transparent",
-    strip: "bg-gradient-to-r from-fuchsia-500 to-violet-600",
+    chip: "tier-s relative bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-500 text-amber-950",
+    bar: "border-l-amber-300 bg-gradient-to-r from-amber-400/35 via-yellow-400/14 to-transparent",
+    strip: "bg-gradient-to-r from-yellow-300 to-amber-500",
   },
   "A+": {
-    chip: "bg-rose-500 text-white shadow-[0_2px_12px_rgba(244,63,94,0.5)]",
+    chip: "bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-[0_2px_12px_rgba(244,63,94,0.55)]",
     bar: "border-l-rose-400 bg-gradient-to-r from-rose-500/30 via-rose-500/12 to-transparent",
-    strip: "bg-rose-500",
+    strip: "bg-gradient-to-r from-rose-500 to-red-600",
   },
   A: {
-    chip: "bg-orange-500 text-white shadow-[0_2px_12px_rgba(249,115,22,0.5)]",
-    bar: "border-l-orange-400 bg-gradient-to-r from-orange-500/30 via-orange-500/12 to-transparent",
-    strip: "bg-orange-500",
+    chip: "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_2px_12px_rgba(139,92,246,0.55)]",
+    bar: "border-l-violet-400 bg-gradient-to-r from-violet-500/30 via-violet-500/12 to-transparent",
+    strip: "bg-gradient-to-r from-violet-500 to-purple-600",
   },
   "A-": {
-    chip: "bg-yellow-400 text-yellow-950 shadow-[0_2px_12px_rgba(250,204,21,0.5)]",
-    bar: "border-l-yellow-300 bg-gradient-to-r from-yellow-400/28 via-yellow-400/12 to-transparent",
-    strip: "bg-yellow-400",
+    chip: "bg-gradient-to-br from-sky-400 to-blue-500 text-white shadow-[0_2px_12px_rgba(56,189,248,0.5)]",
+    bar: "border-l-sky-400 bg-gradient-to-r from-sky-500/28 via-sky-500/12 to-transparent",
+    strip: "bg-gradient-to-r from-sky-400 to-blue-500",
   },
   B: {
     chip: "bg-emerald-500 text-white shadow-[0_2px_12px_rgba(16,185,129,0.5)]",
@@ -103,9 +103,9 @@ const TIER_STYLES: Record<string, TierStyle> = {
     strip: "bg-emerald-500",
   },
   C: {
-    chip: "bg-sky-500 text-white shadow-[0_2px_12px_rgba(14,165,233,0.5)]",
-    bar: "border-l-sky-400 bg-gradient-to-r from-sky-500/28 via-sky-500/12 to-transparent",
-    strip: "bg-sky-500",
+    chip: "bg-slate-500 text-white shadow-[0_2px_12px_rgba(100,116,139,0.45)]",
+    bar: "border-l-slate-400 bg-gradient-to-r from-slate-500/25 via-slate-500/10 to-transparent",
+    strip: "bg-slate-500",
   },
   unrated: {
     chip: "bg-white/15 text-white/75 ring-1 ring-inset ring-white/25",
@@ -221,24 +221,27 @@ function GlassSelect({
 
   const items = ["", ...options];
   return (
-    <div className="space-y-1.5" ref={rootRef}>
-      <div className="text-xs font-semibold uppercase tracking-wider text-white/55">
-        {label}
-      </div>
-      <div className="relative">
-        <button
-          type="button"
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
-          className={[
-            "flex w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md outline-none transition",
-            open
-              ? "border-sky-400 bg-white/15 ring-2 ring-sky-300/50"
-              : "border-white/25 bg-white/10 hover:bg-white/15",
-          ].join(" ")}
-        >
-          <span className={["truncate", value ? "text-white" : "text-white/45"].join(" ")}>
+    <div className="relative min-w-0 flex-1" ref={rootRef}>
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className={[
+          "flex h-full w-full flex-col gap-0.5 rounded-xl px-4 py-2 text-left outline-none transition",
+          open ? "bg-white/15" : "hover:bg-white/10",
+        ].join(" ")}
+      >
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/50">
+          {label}
+        </span>
+        <span className="flex items-center justify-between gap-2">
+          <span
+            className={[
+              "truncate text-sm",
+              value ? "font-medium text-white" : "text-white/45",
+            ].join(" ")}
+          >
             {value || placeholder}
           </span>
           <svg
@@ -259,50 +262,50 @@ function GlassSelect({
               strokeLinejoin="round"
             />
           </svg>
-        </button>
+        </span>
+      </button>
 
-        {open ? (
-          <div
-            role="listbox"
-            className="glass-menu absolute left-0 right-0 z-30 mt-2 max-h-64 overflow-auto rounded-xl p-1"
-          >
-            {items.map((opt) => {
-              const selected = (value || "") === opt;
-              return (
-                <button
-                  key={opt || "__all"}
-                  type="button"
-                  role="option"
-                  aria-selected={selected}
-                  onClick={() => {
-                    onChange(opt);
-                    setOpen(false);
-                  }}
-                  className={[
-                    "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition",
-                    selected
-                      ? "bg-white/20 font-semibold text-white"
-                      : "text-white/75 hover:bg-white/10 hover:text-white",
-                  ].join(" ")}
-                >
-                  <span className="truncate">{opt || placeholder}</span>
-                  {selected ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M5 12l5 5L20 7"
-                        stroke="currentColor"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
-      </div>
+      {open ? (
+        <div
+          role="listbox"
+          className="glass-menu absolute left-0 right-0 z-30 mt-2 max-h-64 overflow-auto rounded-xl p-1"
+        >
+          {items.map((opt) => {
+            const selected = (value || "") === opt;
+            return (
+              <button
+                key={opt || "__all"}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                onClick={() => {
+                  onChange(opt);
+                  setOpen(false);
+                }}
+                className={[
+                  "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition",
+                  selected
+                    ? "bg-white/20 font-semibold text-white"
+                    : "text-white/75 hover:bg-white/10 hover:text-white",
+                ].join(" ")}
+              >
+                <span className="truncate">{opt || placeholder}</span>
+                {selected ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M5 12l5 5L20 7"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1007,7 +1010,7 @@ export default function Home() {
                     }}
                     title="只显示 S / A+ / A"
                   >
-                    只看高价值
+                    高价值
                   </button>
                   <button
                     className="h-8 rounded-lg px-2.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
@@ -1038,7 +1041,8 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+          {/* 一体化搜索条：三个下拉 + 关键词收进同一块玻璃，分段式布局 */}
+          <div className="glass-inner flex flex-col gap-1 rounded-2xl p-1.5 lg:flex-row lg:items-stretch">
             <GlassSelect
               label="星球"
               value={filterPlanet}
@@ -1046,6 +1050,7 @@ export default function Home() {
               placeholder="全部星球"
               options={planetOptions}
             />
+            <div className="hidden w-px self-stretch bg-white/15 lg:my-2 lg:block" />
             <GlassSelect
               label="任务类型"
               value={filterMission}
@@ -1053,6 +1058,7 @@ export default function Home() {
               placeholder="全部任务类型"
               options={missionOptions}
             />
+            <div className="hidden w-px self-stretch bg-white/15 lg:my-2 lg:block" />
             <GlassSelect
               label="派系"
               value={filterFaction}
@@ -1060,13 +1066,14 @@ export default function Home() {
               placeholder="全部派系"
               options={factionOptions}
             />
-            <div className="space-y-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wider text-white/55">
+            <div className="hidden w-px self-stretch bg-white/15 lg:my-2 lg:block" />
+            <label className="flex min-w-0 flex-[1.5] cursor-text flex-col gap-0.5 rounded-xl px-4 py-2 transition focus-within:bg-white/15 hover:bg-white/10">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-white/50">
                 关键词
-              </div>
-              <div className="relative">
+              </span>
+              <span className="flex items-center gap-2">
                 <svg
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/70"
+                  className="shrink-0 text-white/60"
                   width="15"
                   height="15"
                   viewBox="0 0 24 24"
@@ -1081,16 +1088,30 @@ export default function Home() {
                   />
                 </svg>
                 <input
-                  className="w-full rounded-xl border border-white/25 bg-white/10 py-2.5 pl-9 pr-3.5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md outline-none transition placeholder:text-white/40 hover:bg-white/15 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50"
-                  placeholder="例如 地球拦截 或 地球 拦截"
+                  className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-white/40"
+                  placeholder="搜索 星球 / 任务 / 派系 / 节点名"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-              </div>
-              <div className="text-xs text-white/55">
-                匹配星球 / 任务 / 派系 / 节点名 / Key
-              </div>
-            </div>
+                {search ? (
+                  <button
+                    type="button"
+                    className="shrink-0 rounded-full p-0.5 text-white/55 transition hover:bg-white/15 hover:text-white"
+                    onClick={() => setSearch("")}
+                    title="清空关键词"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M6 6l12 12M18 6L6 18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                ) : null}
+              </span>
+            </label>
           </div>
 
           {tab === "schedule" ? (
