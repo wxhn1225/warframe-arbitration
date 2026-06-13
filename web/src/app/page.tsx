@@ -683,7 +683,7 @@ export default function Home() {
 
   const viewSwitch = (
     <div
-      className="lm-seg shrink-0"
+      className="ed-tabs shrink-0"
       style={
         {
           "--seg-n": 2,
@@ -691,22 +691,23 @@ export default function Home() {
         } as React.CSSProperties
       }
     >
-      <div aria-hidden className="lm-seg-thumb" />
       {(
         [
           ["schedule", "仲裁时间"],
           ["tierlist", "等级表"],
         ] as const
-      ).map(([key, label]) => (
+      ).map(([key, label], i) => (
         <button
           key={key}
           data-active={tab === key}
-          className="lm-seg-item px-4 py-1.5 text-sm"
+          className="ed-tab text-sm"
           onClick={() => setTab(key)}
         >
+          <span className="ed-num">{String(i + 1).padStart(2, "0")}</span>
           {label}
         </button>
       ))}
+      <span aria-hidden className="ed-ink" />
     </div>
   );
 
