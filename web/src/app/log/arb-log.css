@@ -450,7 +450,9 @@
   -webkit-appearance: none;
   margin: 0;
 }
-.arb-log .modeInputHms input { width: 50px; text-align: center; padding: 0 6px; }
+/* 宽度给足 3–4 位数余量：截图用嵌入字体，数字字形比屏幕略宽，
+   过窄会把数字顶到右边框上被切掉 */
+.arb-log .modeInputHms input { width: 60px; text-align: center; padding: 0 6px; }
 
 /* ═══════════════════════════════════════════════════════════
    Small metrics
