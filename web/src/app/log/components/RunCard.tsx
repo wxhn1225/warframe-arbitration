@@ -478,14 +478,20 @@ export const RunCard = React.memo(function RunCard({
                           : `第 ${p.index} 轮`;
                   return (
                     <div key={`${p.kind}-${p.index}`} className="phaseRow">
-                      <div className="c1">{label}</div>
+                      <div className="c1">
+                        <span className="phaseCell">{label}</span>
+                      </div>
                       <div className="c2">
-                        {p.shieldDroneCount}
-                        <span className="phaseCum">（{cumDrones}）</span>
+                        <span className="phaseCell">
+                          {p.shieldDroneCount}
+                          <span className="phaseCum">（{cumDrones}）</span>
+                        </span>
                       </div>
                       <div className="c3">
-                        {formatNumber(perExpected, 3)}
-                        <span className="phaseCum">（{formatNumber(cumExpected, 0)}）</span>
+                        <span className="phaseCell">
+                          {formatNumber(perExpected, 3)}
+                          <span className="phaseCum">（{formatNumber(cumExpected, 0)}）</span>
+                        </span>
                       </div>
                     </div>
                   );
