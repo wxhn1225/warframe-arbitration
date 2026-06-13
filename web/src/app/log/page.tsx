@@ -128,43 +128,56 @@ export default function Page() {
     return missions.slice(Math.max(0, missions.length - displayCount));
   }, [missions, displayCount]);
 
-  const warfameDataRef = useRef<{
+  type WarframeData = {
     regions: Record<string, RegionInfo> | null;
     dictZh: Record<string, string> | null;
-  } | null>(null);
-
-  const ensureWarframeData = async () => {
-    if (warfameDataRef.current?.regions && warfameDataRef.current?.dictZh) {
-      return warfameDataRef.current;
-    }
-    try {
-      const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
-      const base = `${basePath}/warframe-public-export-plus`;
-      const [r1, r2] = await Promise.all([
-        fetch(`${base}/ExportRegions.json`),
-        fetch(`${base}/dict.zh.json`),
-      ]);
-      const [j1, j2] = await Promise.all([
-        r1.ok ? r1.json() : null,
-        r2.ok ? r2.json() : null,
-      ]);
-      const data = {
-        regions: (j1 && typeof j1 === "object" ? (j1 as Record<string, RegionInfo>) : null),
-        dictZh: (j2 && typeof j2 === "object" ? (j2 as Record<string, string>) : null),
-      };
-      warfameDataRef.current = data;
-      if (data.regions) setRegions(data.regions);
-      if (data.dictZh) setDictZh(data.dictZh);
-      return data;
-    } catch {
-      return null;
-    }
   };
+  const warfameDataRef = useRef<WarframeData | null>(null);
+  // 进行中的请求也缓存：挂载预取和「上传文件」并发调用时只发一次网络请求
+  const warframeDataPromiseRef = useRef<Promise<WarframeData | null> | null>(null);
+
+  const ensureWarframeData = useCallback((): Promise<WarframeData | null> => {
+    if (warfameDataRef.current?.regions && warfameDataRef.current?.dictZh) {
+      return Promise.resolve(warfameDataRef.current);
+    }
+    if (warframeDataPromiseRef.current) return warframeDataPromiseRef.current;
+
+    const fetchWarframeData = async (): Promise<WarframeData | null> => {
+      try {
+        const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
+        const base = `${basePath}/warframe-public-export-plus`;
+        const [r1, r2] = await Promise.all([
+          fetch(`${base}/ExportRegions.json`),
+          fetch(`${base}/dict.zh.json`),
+        ]);
+        const [j1, j2] = await Promise.all([
+          r1.ok ? r1.json() : null,
+          r2.ok ? r2.json() : null,
+        ]);
+        const data = {
+          regions: (j1 && typeof j1 === "object" ? (j1 as Record<string, RegionInfo>) : null),
+          dictZh: (j2 && typeof j2 === "object" ? (j2 as Record<string, string>) : null),
+        };
+        warfameDataRef.current = data;
+        if (data.regions) setRegions(data.regions);
+        if (data.dictZh) setDictZh(data.dictZh);
+        return data;
+      } catch {
+        return null;
+      }
+    };
+
+    const p = fetchWarframeData().finally(() => {
+      warframeDataPromiseRef.current = null;
+    });
+    warframeDataPromiseRef.current = p;
+    return p;
+  }, []);
 
   // 页面加载后预取节点数据，把网络延迟藏在用户上传文件之前
   useEffect(() => {
     void ensureWarframeData();
-  }, []);
+  }, [ensureWarframeData]);
 
   const nodeInfoLine = (m: MissionResult) => {
     if (!m.nodeId) return "-";
@@ -315,7 +328,10 @@ export default function Page() {
           e.preventDefault();
           setIsDragOver(true);
         }}
-        onDragLeave={() => setIsDragOver(false)}
+        onDragLeave={(e) => {
+          // 拖到子元素上也会触发 dragleave，只有真正离开整个面板才取消高亮
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setIsDragOver(false);
+        }}
         onDrop={(e) => {
           e.preventDefault();
           setIsDragOver(false);

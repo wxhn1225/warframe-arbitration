@@ -189,7 +189,7 @@ export function TimelineChart({
         c.beginPath(); c.moveTo(x, aTop); c.lineTo(x, dBot); c.stroke();
         c.setLineDash([]);
         c.fillStyle = phaseC;
-        c.fillText(`第${p.phaseIdx ?? ""}波`, x, aTop + 2);
+        c.fillText(`第${p.phaseIdx ?? ""}${p.phaseKind === "round" ? "轮" : "波"}`, x, aTop + 2);
       }
 
       if (pts.length >= 2) {
@@ -422,13 +422,14 @@ export function TimelineChart({
             const step = total <= 20 ? 1 : total <= 50 ? 5 : total <= 100 ? 10 : 20;
             return phases.map((p) => {
               const idx = p.phaseIdx ?? 0;
+              const unit = p.phaseKind === "round" ? "轮" : "波";
               const showLabel = idx === 1 || idx % step === 0 || idx === total;
               return (
                 <span
                   key={p.t}
                   className={`chartSliderTick${showLabel ? "" : " tickOnly"}`}
                   style={{ left: `${(p.t / maxT) * 100}%` }}
-                  title={`第${idx}波 — ${p.t.toFixed(0)}s`}
+                  title={`第${idx}${unit} — ${p.t.toFixed(0)}s`}
                 >
                   {showLabel ? idx : ""}
                 </span>

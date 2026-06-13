@@ -204,7 +204,7 @@ export function DetailOverlay({
                   ? String(ev.value ?? "-")
                   : ev.kind === "drone"
                     ? `×${ev.value ?? 1}`
-                    : `第 ${ev.phaseIdx} 波`;
+                    : `第 ${ev.phaseIdx} ${ev.phaseKind === "round" ? "轮" : "波"}`;
               return (
                 <div
                   key={vRow.index}
