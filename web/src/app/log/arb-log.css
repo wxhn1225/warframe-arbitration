@@ -502,13 +502,15 @@
 
 .arb-log .phaseTable { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
 .arb-log .phaseRow {
-  display: grid; grid-template-columns: 1.4fr .8fr 1fr; gap: 10px;
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
   padding: 10px 14px; border-top: 1px solid var(--border);
   font-size: 14px; color: var(--text2);
 }
 .arb-log .phaseRow:first-child { border-top: none; }
 .arb-log .phaseHead { background: var(--inset-bg); font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
-.arb-log .phaseRow .c2, .arb-log .phaseRow .c3 { text-align: left; font-variant-numeric: tabular-nums; }
+.arb-log .phaseRow .c2, .arb-log .phaseRow .c3 { font-variant-numeric: tabular-nums; }
+.arb-log .phaseRow .c2 { text-align: center; }
+.arb-log .phaseRow .c3 { text-align: right; }
 .arb-log .phaseCum { color: var(--muted); font-size: 0.85em; margin-left: 1px; }
 .arb-log .detailEmpty { font-size: 13px; color: var(--muted); }
 
