@@ -508,14 +508,9 @@
 }
 .arb-log .phaseRow:first-child { border-top: none; }
 .arb-log .phaseHead { background: var(--inset-bg); font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
-/* 三列统一：单元格内容整体在列内居中；块内各行左对齐（前导数字上下对齐），
-   固定最小宽度让各行左边缘对齐，表头居中正好压在块中线上 */
-.arb-log .phaseRow .c1, .arb-log .phaseRow .c2, .arb-log .phaseRow .c3 { text-align: center; }
 .arb-log .phaseRow .c2, .arb-log .phaseRow .c3 { font-variant-numeric: tabular-nums; }
-.arb-log .phaseCell { display: inline-block; text-align: left; }
-.arb-log .phaseRow .c1 .phaseCell { min-width: 8em; }
-.arb-log .phaseRow .c2 .phaseCell { min-width: 6em; }
-.arb-log .phaseRow .c3 .phaseCell { min-width: 7.5em; }
+.arb-log .phaseRow .c2 { text-align: center; }
+.arb-log .phaseRow .c3 { text-align: right; }
 .arb-log .phaseCum { color: var(--muted); font-size: 0.85em; margin-left: 1px; }
 .arb-log .detailEmpty { font-size: 13px; color: var(--muted); }
 
