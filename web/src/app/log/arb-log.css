@@ -440,7 +440,17 @@
   background: var(--inset-bg); color: var(--text);
   padding: 0 8px; font-size: 13px; font-family: inherit; outline: none;
 }
-.arb-log .modeInputHms input { width: 46px; }
+/* 去掉数字框的上下调节箭头：手填场景用不上，还挤占宽度导致两位数被遮 */
+.arb-log .modeInput input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.arb-log .modeInput input[type="number"]::-webkit-outer-spin-button,
+.arb-log .modeInput input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.arb-log .modeInputHms input { width: 50px; text-align: center; padding: 0 6px; }
 
 /* ═══════════════════════════════════════════════════════════
    Small metrics
