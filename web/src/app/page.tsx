@@ -682,7 +682,16 @@ export default function Home() {
     tiers.some((t) => selectedTiers[t] === false);
 
   const viewSwitch = (
-    <div className="glass-inner inline-flex shrink-0 rounded-xl p-1">
+    <div
+      className="lm-seg shrink-0"
+      style={
+        {
+          "--seg-n": 2,
+          "--seg-i": tab === "tierlist" ? 1 : 0,
+        } as React.CSSProperties
+      }
+    >
+      <div aria-hidden className="lm-seg-thumb" />
       {(
         [
           ["schedule", "仲裁时间"],
@@ -691,12 +700,8 @@ export default function Home() {
       ).map(([key, label]) => (
         <button
           key={key}
-          className={[
-            "rounded-md px-4 py-1.5 text-sm font-semibold transition",
-            tab === key
-              ? "bg-white text-neutral-900 shadow-sm"
-              : "text-white/60 hover:text-white",
-          ].join(" ")}
+          data-active={tab === key}
+          className="lm-seg-item px-4 py-1.5 text-sm"
           onClick={() => setTab(key)}
         >
           {label}

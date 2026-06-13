@@ -155,7 +155,11 @@ export function SiteNav() {
           </span>
         </Link>
 
-        <div className="glass-inner flex shrink-0 rounded-xl p-1">
+        <div
+          className="lm-seg shrink-0"
+          style={{ "--seg-n": 2, "--seg-i": isLog ? 1 : 0 } as React.CSSProperties}
+        >
+          <div aria-hidden className="lm-seg-thumb" />
           {NAV_TABS.map(({ href, label }) => {
             const active = href === "/log" ? isLog : !isLog;
             return (
@@ -163,12 +167,8 @@ export function SiteNav() {
                 key={href}
                 href={href}
                 onClick={() => setPendingHref(href)}
-                className={[
-                  "rounded-lg px-4 py-1.5 text-sm font-semibold transition md:px-5",
-                  active
-                    ? "bg-white text-neutral-900 shadow-sm"
-                    : "text-white/65 hover:text-white",
-                ].join(" ")}
+                data-active={active}
+                className="lm-seg-item px-4 py-1.5 text-sm md:px-5"
               >
                 {label}
               </Link>

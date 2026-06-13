@@ -91,6 +91,88 @@ body {
   }
 }
 
+/* ===== 液态金属分段切换器（Shopify Editions Winter '26 铬面语言） =====
+   结构：.lm-seg 容器（grid 等分）+ .lm-seg-thumb 滑块 + .lm-seg-item 标签。
+   选中项由 --seg-i 驱动滑块 translateX——纯 transform 合成，切换零重绘。 */
+.lm-seg {
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 4px;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.lm-seg-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / var(--seg-n, 2));
+  transform: translateX(calc(var(--seg-i, 0) * 100%));
+  /* 轻微过冲的缓动：滑块像液体一样"甩"到位 */
+  transition: transform 0.45s cubic-bezier(0.3, 1.25, 0.4, 1);
+  border-radius: 0.5rem;
+  /* 与品牌铬字同族的液态金属面，缓慢流动光泽 */
+  background: linear-gradient(
+    115deg,
+    #c3cad9 0%,
+    #ffffff 20%,
+    #97a2b8 38%,
+    #f8fafc 52%,
+    #a5aec2 68%,
+    #ffffff 86%,
+    #c3cad9 100%
+  );
+  background-size: 220% 100%;
+  animation: chrome-flow 9s linear infinite;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px rgba(96, 106, 128, 0.55);
+}
+/* 滑块顶部一道细高光，强化"抛光曲面"感 */
+.lm-seg-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 1px 6px auto 6px;
+  height: 38%;
+  border-radius: inherit;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.85),
+    rgba(255, 255, 255, 0)
+  );
+}
+.lm-seg-item {
+  position: relative;
+  z-index: 1;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 0.25s;
+  white-space: nowrap;
+}
+.lm-seg-item:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+/* 文字压在铬面上改用深色，并稍延迟跟随滑块到位的节奏 */
+.lm-seg-item[data-active="true"] {
+  color: #14161f;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lm-seg-thumb {
+    transition: none;
+    animation: none;
+  }
+}
+
 /* ===== S 级：传说金 呼吸微光 + ✦ 角标 ===== */
 /* 呼吸光环放在 ::before 上做 opacity 动画（合成器层，不重绘），
    避免直接动画 box-shadow 引发每帧 repaint——等级表里 S 节点可能很多 */
@@ -186,6 +268,14 @@ body {
   }
   /* 流动铬字动画在触屏上停掉（保留静态金属渐变） */
   .chrome-word {
+    animation: none;
+  }
+  .lm-seg {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .lm-seg-thumb {
     animation: none;
   }
 }
