@@ -407,7 +407,26 @@
 .arb-log .modeItem:has(input:checked) {
   color: var(--ink-text); border-color: var(--ink-border); background: var(--ink-bg); font-weight: 600;
 }
-.arb-log .modeItem input { accent-color: var(--ink); width: 12px; height: 12px; }
+/* 自绘单选圆点（不用原生 accent-color）：
+   原生表单控件的选中态是 DOM property，html-to-image 序列化时会丢失，
+   导致截图里蓝点回退到第一项。改用 :checked 背景后，选中态会被
+   "计算样式烤录"机制带进截图，屏幕与出图一致。 */
+.arb-log .modeItem input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  width: 13px; height: 13px; margin: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: transparent;
+}
+.arb-log .modeItem input[type="radio"]:checked {
+  border-color: var(--ink);
+  background-image: radial-gradient(circle at center, var(--ink) 0 3.2px, transparent 3.8px);
+}
+.arb-log .modeItem input[type="radio"]:disabled {
+  opacity: .4;
+}
 
 .arb-log .modeInput {
   display: inline-flex; align-items: center; gap: 6px;
