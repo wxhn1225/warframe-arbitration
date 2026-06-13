@@ -452,6 +452,8 @@
 }
 /* 宽度给足 3–4 位数余量：截图用嵌入字体，数字字形比屏幕略宽，
    过窄会把数字顶到右边框上被切掉 */
+.arb-log .modeInputHms { gap: 10px; }
+.arb-log .hmsUnit { display: inline-flex; align-items: center; gap: 5px; }
 .arb-log .modeInputHms input { width: 60px; text-align: center; padding: 0 6px; }
 
 /* ═══════════════════════════════════════════════════════════

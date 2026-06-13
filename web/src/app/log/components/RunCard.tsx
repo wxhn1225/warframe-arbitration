@@ -322,44 +322,30 @@ export const RunCard = React.memo(function RunCard({
         </label>
         {timeMode === "manual" ? (
           <label className="modeInput modeInputHms">
-            <span>h</span>
-            <input
-              type="number"
-              inputMode="decimal"
-              min="0"
-              step="1"
-              value={manual.h}
-              onChange={(e) => onManualChange(idx, "h", e.target.value)}
-            />
-            <span>m</span>
-            <input
-              type="number"
-              inputMode="decimal"
-              min="0"
-              step="1"
-              value={manual.m}
-              onChange={(e) => onManualChange(idx, "m", e.target.value)}
-            />
-            <span>s</span>
-            <input
-              type="number"
-              inputMode="decimal"
-              min="0"
-              step="1"
-              value={manual.s}
-              onChange={(e) => onManualChange(idx, "s", e.target.value)}
-            />
+            {(["h", "m", "s"] as const).map((f) => (
+              <span key={f} className="hmsUnit">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={manual[f]}
+                  onChange={(e) =>
+                    onManualChange(idx, f, e.target.value.replace(/[^\d]/g, ""))
+                  }
+                />
+                <span>{f}</span>
+              </span>
+            ))}
           </label>
         ) : null}
         <label className="modeInput">
           <span>实际生息</span>
           <input
-            type="number"
+            type="text"
             inputMode="decimal"
-            min="0"
-            step="0.1"
             value={actualText}
-            onChange={(e) => onActualChange(idx, e.target.value)}
+            onChange={(e) =>
+              onActualChange(idx, e.target.value.replace(/[^\d.]/g, ""))
+            }
           />
         </label>
         <button
